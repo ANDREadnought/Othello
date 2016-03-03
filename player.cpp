@@ -52,6 +52,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   Move* todo;
   moves = getMoves();
   todo = chooseMove(moves);
+  this->board->doMove(todo, this->color);
   delete moves;
   return todo;
 }
@@ -71,12 +72,12 @@ std::vector<Move*>* Player::getMoves()
 	  else delete test;
 	}
     }
-  for(int i = 0; i < ret->size(); i++)
-    {
-      Move* test2 = (*ret)[i];
-      std::cerr << test2->getX() << " " << test2->getY() << std::endl;
-    }
-  std::cerr << std::endl;
+  // for(int i = 0; i < ret->size(); i++)
+  //   {
+  //     Move* test2 = (*ret)[i];
+  //     std::cerr << test2->getX() << " " << test2->getY() << std::endl;
+  //   }
+  // std::cerr << std::endl;
   return ret;
 }
 
