@@ -8,7 +8,6 @@
 #include <vector>
 #include <unordered_map>
 
-const int BOARDSIZE = 8;
 const double infinity = 987654321.32658;
 typedef std::unordered_map<std::string, double> table;
 
@@ -29,5 +28,7 @@ public:
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
 };
+
+double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color);
 
 #endif

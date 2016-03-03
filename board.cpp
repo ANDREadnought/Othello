@@ -178,3 +178,17 @@ void Board::setBoard(char data[]) {
         }
     }
 }
+
+int Board::numValidMoves(Side side)
+{
+  int ret = 0;
+  for(int i = 0; i < BOARDSIZE; i++)
+    {
+      for(int j = 0; j < BOARDSIZE; j++)
+	{
+	  Move test(i, j);
+	  if(this->checkMove(&test, side)) ret++;
+	}
+    }
+  return ret;
+}

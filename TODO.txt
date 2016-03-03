@@ -1,0 +1,7 @@
+Minimax w/ alpha-beta pruning
+Move Order
+Transposition Table
+Opening Book
+MTD(f)
+Tweak heuristic
+

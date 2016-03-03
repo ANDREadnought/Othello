@@ -5,6 +5,8 @@ enum Side {
     WHITE, BLACK
 };
 
+const int BOARDSIZE = 8;
+
 class Move {
    
 public:

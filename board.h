@@ -10,13 +10,13 @@ class Board {
 private:
     bitset<64> black;
     bitset<64> taken;    
-       
+    void set(Side side, int x, int y);
+
+ public:
     bool occupied(int x, int y);
     bool get(Side side, int x, int y);
-    void set(Side side, int x, int y);
     bool onBoard(int x, int y);
       
-public:
     Board();
     ~Board();
     Board *copy();
@@ -24,11 +24,11 @@ public:
     bool isDone();
     bool hasMoves(Side side);
     bool checkMove(Move *m, Side side);
+    int numValidMoves(Side side);
     void doMove(Move *m, Side side);
     int count(Side side);
     int countBlack();
     int countWhite();
-    double heuristic();
 
     void setBoard(char data[]);
 };
