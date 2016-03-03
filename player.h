@@ -6,14 +6,15 @@
 #include "board.h"
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include "table.h"
 
 const double infinity = 987654321.32658;
-typedef std::unordered_map<std::string, double> table;
+const std::string openingfile = "openingbook.txt";
+const std::string transfile = "transtable.txt";
 
 class Player {
 protected:
-  table *openings, *trans;
+  Table *openings, *trans;
   Board* board;
   std::vector<Move*>* getMoves();
   Move* chooseMove(std::vector<Move*>* moves);

@@ -1,5 +1,8 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
+#include <exception>
+
+class FileNotOpenError : public std::exception {};
 
 enum Side { 
     WHITE, BLACK

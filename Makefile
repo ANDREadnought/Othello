@@ -1,6 +1,6 @@
 CC          = g++
 CFLAGS      = -Wall -ansi -pedantic -ggdb --std=c++11
-OBJS        = player.o board.o
+OBJS        = player.o board.o table.o
 PLAYERNAME  = ANDREadnought
 
 all: $(PLAYERNAME) testgame

@@ -8,8 +8,8 @@
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-    this->trans = nullptr;
-    this->openings = nullptr;
+    this->trans = new Table(transfile);
+    this->openings = new Table(openingfile);
     this->board = new Board();
     this->color = side;
     if(side == WHITE) this->oppcolor = BLACK;
@@ -96,7 +96,7 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
   //pick first move found
   //winner = (*moves)[0];
   //maximize number of pieces on next turn.
-  for(int i = 0; i < moves->size(); i++)
+  for(unsigned int i = 0; i < moves->size(); i++)
     {
       double heur;
       Board* testboard = this->board->copy();
