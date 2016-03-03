@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 const int BOARDSIZE = 8;
+const double infinity = 987654321.32658;
 typedef std::unordered_map<std::string, double> table;
 
 class Player {
@@ -18,6 +19,7 @@ protected:
   std::vector<Move*>* getMoves();
   Move* chooseMove(std::vector<Move*>* moves);
   Side color, oppcolor;
+  double heuristic(Board* board);
 public:
     Player(Side side);
     ~Player();

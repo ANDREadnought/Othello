@@ -28,6 +28,7 @@ public:
     int count(Side side);
     int countBlack();
     int countWhite();
+    double heuristic();
 
     void setBoard(char data[]);
 };

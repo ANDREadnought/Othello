@@ -84,8 +84,40 @@ std::vector<Move*>* Player::getMoves()
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   if(moves->size() < 1) return nullptr;
-  double maxheur; Move* winner;
+  double bestheur;
+  if(this->color == BLACK)
+    {
+      bestheur = -infinity;
+    }
+  else bestheur = infinity;
+  Move* winner;
+  
   //Make much better heuristic here.
-  winner = (*moves)[0];
+  //pick first move found
+  //winner = (*moves)[0];
+  //maximize number of pieces on next turn.
+  for(int i = 0; i < moves->size(); i++)
+    {
+      double heur;
+      Board* testboard = this->board->copy();
+      testboard->doMove((*moves)[i], this->color);
+      heur = heuristic(testboard);
+      if(this->color == BLACK and heur > bestheur)
+	{
+	  bestheur = heur;
+	  winner = (*moves)[i];
+	}
+      else if(this->color == WHITE and heur < bestheur) 
+	{
+	  bestheur = heur;
+	  winner = (*moves)[i];
+	}
+    }
+  std::cerr << bestheur << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
   return winner;
+}
+
+double Player::heuristic(Board* board)
+{
+  return board->countBlack() - board->countWhite();
 }
