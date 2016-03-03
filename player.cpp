@@ -100,6 +100,23 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   return todo;
 }
 
+std::vector<Move*>* getMoves(Board *board, Side s){
+  std::vector<Move*>* ret = new std::vector<Move*>;
+  for(int i = 0; i < BOARDSIZE; i++)
+  {
+    for(int j = 0; j < BOARDSIZE; j++)
+      {
+	  Move* test = new Move(i, j);
+	  if(board->checkMove(test, s))
+	  {
+	      ret->push_back(test);
+	  } 
+	  else delete test;
+      }
+  }
+  return ret;
+}
+
 std::vector<Move*>* Player::getMoves()
 {
   std::vector<Move*>* ret = new std::vector<Move*>;
@@ -145,8 +162,12 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
       Board* testboard = this->board->copy();
       testboard->doMove((*moves)[i], this->color);
       //heur = heuristic(testboard);
-      if(this->color == WHITE) heur = uWashingtonHeuristic(testboard, WHITE, BLACK);
-      else heur = uWashingtonHeuristic(testboard, BLACK, WHITE); 
+      /*if(this->color == WHITE) heur = uWashingtonHeuristic(testboard, WHITE, BLACK);
+	else heur = uWashingtonHeuristic(testboard, BLACK, WHITE);*/
+      if (this->color == WHITE)
+	heur = minimax(testboard, BLACK, 1);
+      else
+	heur = minimax(testboard, WHITE, 1);
       if(this->color == BLACK and heur > bestheur)
 	{
 	  bestheur = heur;
@@ -157,6 +178,7 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 	  bestheur = heur;
 	  winner = (*moves)[i];
 	}
+      //std::cerr << heur << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
     }
   std::cerr << bestheur << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
   return winner;
@@ -329,4 +351,50 @@ double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color)  {
 	  (382.026 * closenessscore) + (78.922 * mobscore) + 
 	  (74.396 * frontierscore) + (10 * diskstabilityscore);
 	return score;
+}
+
+double minimax(Board* board, Side s, int depth)
+{
+  //board->printBoard();
+  int MAX_DEPTH = 1;
+  double min =(infinity);
+  std::vector<Move*> *moves = getMoves(board, s);
+  for (unsigned int i = 0; i < moves->size(); i++) {
+    Move *m = (*moves)[i];
+    Board * temp = board->copy();
+    double score = 0;
+    //std::cerr << "depth: " << depth << " (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
+    if (s == BLACK){
+      temp->doMove(m, BLACK);
+      if (depth < MAX_DEPTH){
+	score = minimax(temp, WHITE, depth+1);
+      }
+      else{
+	//temp->printBoard();
+	score = uWashingtonHeuristic(temp, BLACK, WHITE);
+      }
+      if (-score < min){
+	min = -score;
+      }
+    }
+    else{
+      temp->doMove(m, WHITE);
+      if (depth < MAX_DEPTH){
+	score = minimax(temp, BLACK, depth+1);
+      }
+      else{
+	//temp->printBoard();
+	score = uWashingtonHeuristic(temp, WHITE, BLACK);
+      }
+      if (score < min){
+	min = score;
+      }
+    }
+    //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
+    delete temp;
+  }
+  if (s == BLACK){
+    return -min;
+  }
+  return min;
 }

@@ -30,6 +30,7 @@ public:
     bool testingMinimax;
 };
 
+std::vector<Move*>* getMoves(Board* board, Side color);
 double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color);
-
+double minimax(Board* board, Side s, int depth);
 #endif
