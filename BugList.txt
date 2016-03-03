@@ -1,0 +1,4 @@
+2-3-16 12:40 PM
+Playing ANDREadnought versus himself will read and write to same file. 
+Think it can fuck up if double read/write.
+---- Shouldn't matter too much if there code isn't parallel.
