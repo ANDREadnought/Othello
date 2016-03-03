@@ -168,165 +168,165 @@ double Player::heuristic(Board* board)
 }
 
 double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color)  {
-	int my_tiles = 0, opp_tiles = 0, my_front_tiles = 0, opp_front_tiles = 0, x, y;
-	double p = 0, c = 0, l = 0, m = 0, f = 0, d = 0;
+	int mytiles = 0, opptiles = 0, myfrontier = 0, oppfrontier = 0;
 
 	int X1[] = {-1, -1, 0, 1, 1, 1, 0, -1};
 	int Y1[] = {0, 1, 1, 1, 0, -1, -1, -1};
-
-	// int V[8][8];
-	// Tile weights
-	// V[0] = {20, -3, 11, 8, 8, 11, -3, 20};
-    	// V[1] = {-3, -7, -4, 1, 1, -4, -7, -3};
-    	// V[2] = {11, -4, 2, 2, 2, 2, -4, 11};
-    	// V[3] = {8, 1, 2, -3, -3, 2, 1, 8};
-    	// V[4] = {8, 1, 2, -3, -3, 2, 1, 8};
-    	// V[5] = {11, -4, 2, 2, 2, 2, -4, 11};
-    	// V[6] = {-3, -7, -4, 1, 1, -4, -7, -3};
-    	// V[7] = {20, -3, 11, 8, 8, 11, -3, 20};
 	
-	std::vector<std::vector<int>> V;
+	//Weights for Disk Stability
+	std::vector<std::vector<int>> weights;
 	std::vector<int> temp;
 	temp.push_back(20); temp.push_back(-3); temp.push_back(11); temp.push_back(8);
 	temp.push_back(8); temp.push_back(11); temp.push_back(-3); temp.push_back(20);
-	V.push_back(temp);
+	weights.push_back(temp);
 
 	temp.clear();
 	temp.push_back(-3); temp.push_back(-7); temp.push_back(-4); temp.push_back(1);
 	temp.push_back(1); temp.push_back(-4); temp.push_back(-7); temp.push_back(-3);
-	V.push_back(temp);
+	weights.push_back(temp);
 	
 	temp.clear();
 	temp.push_back(11); temp.push_back(-4); temp.push_back(2); temp.push_back(2);
 	temp.push_back(2); temp.push_back(2); temp.push_back(-4); temp.push_back(11);
-	V.push_back(temp);
+	weights.push_back(temp);
 
 	temp.clear();
 	temp.push_back(8); temp.push_back(1); temp.push_back(2); temp.push_back(-3);
 	temp.push_back(-3); temp.push_back(2); temp.push_back(1); temp.push_back(8);
-	V.push_back(temp);
+	weights.push_back(temp);
 	
 	temp.clear();
 	temp.push_back(8); temp.push_back(1); temp.push_back(2); temp.push_back(-3);
 	temp.push_back(-3); temp.push_back(2); temp.push_back(1); temp.push_back(8);
-	V.push_back(temp);
+	weights.push_back(temp);
 	
 	temp.clear();
 	temp.push_back(11); temp.push_back(-4); temp.push_back(2); temp.push_back(2);
 	temp.push_back(2); temp.push_back(2); temp.push_back(-4); temp.push_back(11);
-	V.push_back(temp);
+	weights.push_back(temp);
 
 	temp.clear();
 	temp.push_back(-3); temp.push_back(-7); temp.push_back(-4); temp.push_back(1);
 	temp.push_back(1); temp.push_back(-4); temp.push_back(-7); temp.push_back(-3);
-	V.push_back(temp);
+	weights.push_back(temp);
 	
 	temp.clear();
 	temp.push_back(20); temp.push_back(-3); temp.push_back(11); temp.push_back(8);
 	temp.push_back(8); temp.push_back(11); temp.push_back(-3); temp.push_back(20);
-	V.push_back(temp);
+	weights.push_back(temp);
 
-// Piece difference, frontier disks and disk squares
-	for(int i = 0; i < 8; i++)
-	  for(int j = 0; j < 8; j++)  
+
+	// Mobility
+	double mobscore;
+	mytiles = board->numValidMoves(my_color);
+	opptiles = board->numValidMoves(opp_color);
+	if(mytiles > opptiles)
+	  mobscore = (100.0 * mytiles)/(mytiles + opptiles);
+	else if(mytiles < opptiles)
+	  mobscore = -(100.0 * opptiles)/(mytiles + opptiles);
+	else mobscore = 0;
+
+	// Piece difference, frontier disks and disk square
+	double diskstabilityscore;
+	for(int i = 0; i < BOARDSIZE; i++)
+	  for(int j = 0; j < BOARDSIZE; j++)  
 	    {
 	      if(board->get(my_color, i, j))  
 		{
-		  d += V[i][j];
-		  my_tiles++;
+		  diskstabilityscore += weights[i][j];
+		  mytiles++;
 		} 
 	      else if(board->get(opp_color, i, j))  
 		{
-		  d -= V[i][j];
-		  opp_tiles++;
+		  diskstabilityscore -= weights[i][j];
+		  opptiles++;
 		}
 	      if(board->occupied(i, j))  
 		{
 		  for(int k = 0; k < 8; k++)  {
-		    x = i + X1[k]; y = j + Y1[k];
+		    int x = i + X1[k]; int y = j + Y1[k];
 		    if(x >= 0 && x < 8 && y >= 0 && y < 8 && !board->occupied(i, j)) 
 		      {
-			if(board->get(my_color, i, j)) my_front_tiles++;
-			else opp_front_tiles++;
+			if(board->get(my_color, i, j)) myfrontier++;
+			else oppfrontier++;
 			break;
 		      }
 		  }
 		}
 	    }
-	if(my_tiles > opp_tiles)
-	  p = (100.0 * my_tiles)/(my_tiles + opp_tiles);
-	else if(my_tiles < opp_tiles)
-	  p = -(100.0 * opp_tiles)/(my_tiles + opp_tiles);
-	else p = 0;
+	double parityscore;
+	if(mytiles > opptiles)
+	  parityscore = (100.0 * mytiles)/(mytiles + opptiles);
+	else if(mytiles < opptiles)
+	  parityscore = -(100.0 * opptiles)/(mytiles + opptiles);
+	else parityscore = 0;
 	
-	if(my_front_tiles > opp_front_tiles)
-	  f = -(100.0 * my_front_tiles)/(my_front_tiles + opp_front_tiles);
-	else if(my_front_tiles < opp_front_tiles)
-	  f = (100.0 * opp_front_tiles)/(my_front_tiles + opp_front_tiles);
-	else f = 0;
+	double frontierscore;
+	if(myfrontier > oppfrontier)
+	  frontierscore = -(100.0 * myfrontier)/(myfrontier + oppfrontier);
+	else if(myfrontier < oppfrontier)
+	  frontierscore = (100.0 * oppfrontier)/(myfrontier + oppfrontier);
+	else frontierscore = 0;
 	
-	// Corner occupancy
-	my_tiles = opp_tiles = 0;
-	if(board->get(my_color, 0, 0)) my_tiles++;
-	else if(board->get(opp_color, 0, 0)) opp_tiles++;
-	if(board->get(my_color, 0, 7)) my_tiles++;
-	else if(board->get(opp_color, 0, 7)) opp_tiles++;
-	if(board->get(my_color, 7, 0)) my_tiles++;
-	else if(board->get(opp_color, 7, 0)) opp_tiles++;
-	if(board->get(my_color, 7, 7)) my_tiles++;
-	else if(board->get(opp_color, 7, 7)) opp_tiles++;
-	c = 25 * (my_tiles - opp_tiles);
-	
-	// Corner closeness
-	my_tiles = opp_tiles = 0;
+
+	// "Corner Closeness"
+	// If corner isn't occupied, and the tile next to it is occupied
+	double closenessscore;
+	mytiles = 0; opptiles = 0;
 	if(!board->occupied(0,0))  
 	  {
-	    if(board->get(my_color, 0, 1)) my_tiles++;
-	    else if(board->get(opp_color, 0, 1)) opp_tiles++;
-	    if(board->get(my_color, 1, 1)) my_tiles++;
-	    else if(board->get(opp_color, 1, 1)) opp_tiles++;
-	    if(board->get(my_color, 1, 0)) my_tiles++;
-	    else if(board->get(opp_color, 1, 0)) opp_tiles++;
+	    if(board->get(my_color, 0, 1)) mytiles++;
+	    else if(board->get(opp_color, 0, 1)) opptiles++;
+	    if(board->get(my_color, 1, 1)) mytiles++;
+	    else if(board->get(opp_color, 1, 1)) opptiles++;
+	    if(board->get(my_color, 1, 0)) mytiles++;
+	    else if(board->get(opp_color, 1, 0)) opptiles++;
 	  }
 	if(!board->occupied(0, 7))
 	  {
-	    if(board->get(my_color, 0, 6)) my_tiles++;
-	    else if(board->get(opp_color, 0, 6)) opp_tiles++;
-	    if(board->get(my_color, 1, 6)) my_tiles++;
-	    else if(board->get(opp_color, 1, 6)) opp_tiles++;
-	    if(board->get(my_color, 1, 7)) my_tiles++;
-	    else if(board->get(opp_color, 1, 7)) opp_tiles++;
+	    if(board->get(my_color, 0, 6)) mytiles++;
+	    else if(board->get(opp_color, 0, 6)) opptiles++;
+	    if(board->get(my_color, 1, 6)) mytiles++;
+	    else if(board->get(opp_color, 1, 6)) opptiles++;
+	    if(board->get(my_color, 1, 7)) mytiles++;
+	    else if(board->get(opp_color, 1, 7)) opptiles++;
 	  }
 	if(!board->occupied(7,0))
 	  {
-	    if(board->get(my_color, 7, 1)) my_tiles++;
-	    else if(board->get(opp_color, 7, 1)) opp_tiles++;
-	    if(board->get(my_color, 6, 1)) my_tiles++;
-	    else if(board->get(opp_color, 6, 1)) opp_tiles++;
-	    if(board->get(my_color, 6, 0)) my_tiles++;
-	    else if(board->get(opp_color, 6, 0)) opp_tiles++;
+	    if(board->get(my_color, 7, 1)) mytiles++;
+	    else if(board->get(opp_color, 7, 1)) opptiles++;
+	    if(board->get(my_color, 6, 1)) mytiles++;
+	    else if(board->get(opp_color, 6, 1)) opptiles++;
+	    if(board->get(my_color, 6, 0)) mytiles++;
+	    else if(board->get(opp_color, 6, 0)) opptiles++;
 	  }
 	if(!board->occupied(7,7)) 
 	  {
-	    if(board->get(my_color, 6, 7)) my_tiles++;
-	    else if(board->get(opp_color, 6, 7)) opp_tiles++;
-	    if(board->get(my_color, 6, 6)) my_tiles++;
-	    else if(board->get(opp_color, 6, 6)) opp_tiles++;
-	    if(board->get(my_color, 7, 6)) my_tiles++;
-	    else if(board->get(opp_color, 7, 6)) opp_tiles++;
+	    if(board->get(my_color, 6, 7)) mytiles++;
+	    else if(board->get(opp_color, 6, 7)) opptiles++;
+	    if(board->get(my_color, 6, 6)) mytiles++;
+	    else if(board->get(opp_color, 6, 6)) opptiles++;
+	    if(board->get(my_color, 7, 6)) mytiles++;
+	    else if(board->get(opp_color, 7, 6)) opptiles++;
 	  }
-	l = -12.5 * (my_tiles - opp_tiles);
+	closenessscore = -12.5 * (mytiles - opptiles);
 
-// Mobility
-	my_tiles = board->numValidMoves(my_color);
-	opp_tiles = board->numValidMoves(opp_color);
-	if(my_tiles > opp_tiles)
-	  m = (100.0 * my_tiles)/(my_tiles + opp_tiles);
-	else if(my_tiles < opp_tiles)
-	  m = -(100.0 * opp_tiles)/(my_tiles + opp_tiles);
-	else m = 0;
+	// Holding Corners?
+	double cornerscore;
+	mytiles = 0; opptiles = 0;
+	if(board->get(my_color, 0, 0)) mytiles++;
+	else if(board->get(opp_color, 0, 0)) opptiles++;
+	if(board->get(my_color, 0, 7)) mytiles++;
+	else if(board->get(opp_color, 0, 7)) opptiles++;
+	if(board->get(my_color, 7, 0)) mytiles++;
+	else if(board->get(opp_color, 7, 0)) opptiles++;
+	if(board->get(my_color, 7, 7)) mytiles++;
+	else if(board->get(opp_color, 7, 7)) opptiles++;
+	cornerscore = 25 * (mytiles - opptiles);
 	
 	// final weighted score
-	double score = (10 * p) + (801.724 * c) + (382.026 * l) + (78.922 * m) + (74.396 * f) + (10 * d);
+	double score = (10 * parityscore) + (801.724 * cornerscore) + 
+	  (382.026 * closenessscore) + (78.922 * mobscore) + 
+	  (74.396 * frontierscore) + (10 * diskstabilityscore);
 	return score;
 }
