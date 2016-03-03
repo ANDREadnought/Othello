@@ -176,43 +176,43 @@ double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color)  {
 	//Weights for Disk Stability
 	std::vector<std::vector<int>> weights;
 	std::vector<int> temp;
-	temp.push_back(20); temp.push_back(-3); temp.push_back(11); temp.push_back(8);
-	temp.push_back(8); temp.push_back(11); temp.push_back(-3); temp.push_back(20);
+	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
+	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
 	weights.push_back(temp);
 
 	temp.clear();
-	temp.push_back(-3); temp.push_back(-7); temp.push_back(-4); temp.push_back(1);
-	temp.push_back(1); temp.push_back(-4); temp.push_back(-7); temp.push_back(-3);
+	temp.push_back(-3); temp.push_back(-4); temp.push_back(-1); temp.push_back(-1);
+	temp.push_back(-1); temp.push_back(-1); temp.push_back(-4); temp.push_back(-3);
 	weights.push_back(temp);
 	
 	temp.clear();
-	temp.push_back(11); temp.push_back(-4); temp.push_back(2); temp.push_back(2);
-	temp.push_back(2); temp.push_back(2); temp.push_back(-4); temp.push_back(11);
+	temp.push_back(2); temp.push_back(-1); temp.push_back(1); temp.push_back(0);
+	temp.push_back(0); temp.push_back(1); temp.push_back(-1); temp.push_back(2);
 	weights.push_back(temp);
 
 	temp.clear();
-	temp.push_back(8); temp.push_back(1); temp.push_back(2); temp.push_back(-3);
-	temp.push_back(-3); temp.push_back(2); temp.push_back(1); temp.push_back(8);
-	weights.push_back(temp);
-	
-	temp.clear();
-	temp.push_back(8); temp.push_back(1); temp.push_back(2); temp.push_back(-3);
-	temp.push_back(-3); temp.push_back(2); temp.push_back(1); temp.push_back(8);
-	weights.push_back(temp);
-	
-	temp.clear();
-	temp.push_back(11); temp.push_back(-4); temp.push_back(2); temp.push_back(2);
-	temp.push_back(2); temp.push_back(2); temp.push_back(-4); temp.push_back(11);
+	temp.push_back(2); temp.push_back(-1); temp.push_back(0); temp.push_back(1);
+	temp.push_back(1); temp.push_back(0); temp.push_back(-1); temp.push_back(2);
 	weights.push_back(temp);
 
 	temp.clear();
-	temp.push_back(-3); temp.push_back(-7); temp.push_back(-4); temp.push_back(1);
-	temp.push_back(1); temp.push_back(-4); temp.push_back(-7); temp.push_back(-3);
+	temp.push_back(2); temp.push_back(-1); temp.push_back(0); temp.push_back(1);
+	temp.push_back(1); temp.push_back(0); temp.push_back(-1); temp.push_back(2);
 	weights.push_back(temp);
-	
+
 	temp.clear();
-	temp.push_back(20); temp.push_back(-3); temp.push_back(11); temp.push_back(8);
-	temp.push_back(8); temp.push_back(11); temp.push_back(-3); temp.push_back(20);
+	temp.push_back(2); temp.push_back(-1); temp.push_back(1); temp.push_back(0);
+	temp.push_back(0); temp.push_back(1); temp.push_back(-1); temp.push_back(2);
+	weights.push_back(temp);
+
+	temp.clear();
+	temp.push_back(-3); temp.push_back(-4); temp.push_back(-1); temp.push_back(-1);
+	temp.push_back(-1); temp.push_back(-1); temp.push_back(-4); temp.push_back(-3);
+	weights.push_back(temp);
+
+	temp.clear();
+	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
+	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
 	weights.push_back(temp);
 
 
