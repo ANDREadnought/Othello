@@ -8,7 +8,12 @@
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-
+    this->trans = nullptr;
+    this->openings = nullptr;
+    this->board = new Board();
+    this->color = side;
+    if(side == WHITE) this->oppcolor = BLACK;
+    else this->oppcolor = WHITE;
     /* 
      * TODO: Do any initialization you need to do here (setting up the board,
      * precalculating things, etc.) However, remember that you will only have
@@ -20,6 +25,9 @@ Player::Player(Side side) {
  * Destructor for the player.
  */
 Player::~Player() {
+  delete board;
+  if(this->trans) delete trans;
+  if(this->openings) delete openings;
 }
 
 /*
@@ -39,5 +47,44 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
-    return NULL;
+  this->board->doMove(opponentsMove, this->oppcolor);
+  std::vector<Move*> *moves;
+  Move* todo;
+  moves = getMoves();
+  todo = chooseMove(moves);
+  delete moves;
+  return todo;
+}
+
+std::vector<Move*>* Player::getMoves()
+{
+  std::vector<Move*>* ret = new std::vector<Move*>;
+  for(int i = 0; i < BOARDSIZE; i++)
+    {
+      for(int j = 0; j < BOARDSIZE; j++)
+	{
+	  Move* test = new Move(i, j);
+	  if(this->board->checkMove(test, this->color))
+	    {
+	      ret->push_back(test);
+	    } 
+	  else delete test;
+	}
+    }
+  for(int i = 0; i < ret->size(); i++)
+    {
+      Move* test2 = (*ret)[i];
+      std::cerr << test2->getX() << " " << test2->getY() << std::endl;
+    }
+  std::cerr << std::endl;
+  return ret;
+}
+
+Move* Player::chooseMove(std::vector<Move*>* moves)
+{
+  if(moves->size() < 1) return nullptr;
+  double maxheur; Move* winner;
+  //Make much better heuristic here.
+  winner = (*moves)[0];
+  return winner;
 }
