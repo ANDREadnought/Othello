@@ -1,10 +1,10 @@
 CC          = g++
 CFLAGS      = -Wall -ansi -pedantic -ggdb
 OBJS        = player.o board.o
-PLAYERNAME  = player
+PLAYERNAME  = Sotilas
 
 all: $(PLAYERNAME) testgame
-	
+
 $(PLAYERNAME): $(OBJS) wrapper.o
 	$(CC) -o $@ $^
 
