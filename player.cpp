@@ -8,8 +8,29 @@
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
+
+    // Transposition Table
     this->trans = new Table(transfile);
+    try // Are we going to be using this across games?
+      {
+	this->trans->load();
+      }
+    catch(FileNotOpenError())
+      {
+	std::cerr << "Transpositon not loaded" << std::endl;
+      }
+    
+    // Opening Book
     this->openings = new Table(openingfile);
+    try
+      {
+	this->openings->load();
+      }
+    catch(FileNotOpenError())
+      {
+	std::cerr << "Opening book not loaded" << std::endl;
+      }
+
     this->board = new Board();
     this->color = side;
     if(side == WHITE) this->oppcolor = BLACK;
@@ -26,8 +47,30 @@ Player::Player(Side side) {
  */
 Player::~Player() {
   delete board;
-  if(this->trans) delete trans;
-  if(this->openings) delete openings;
+  if(this->trans)
+    {
+      try
+	{
+	  this->trans->save();
+	}
+      catch(FileNotOpenError())
+	{
+	  std::cerr << "Transposition Table not saved" << std::endl;
+	}
+      delete trans;
+    }
+  if(this->openings)
+    {
+      try
+	{
+	  this->openings->save();
+	}
+      catch(FileNotOpenError())
+	{
+	  std::cerr << "Transposition Table not saved" << std::endl;
+	}
+      delete openings;
+    }
 }
 
 /*
