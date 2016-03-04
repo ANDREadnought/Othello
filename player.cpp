@@ -363,7 +363,7 @@ double minimax(Board* board, Side s, int depth)
   else{
     opp = BLACK;
   }
-  int MAX_DEPTH = 4;
+  int MAX_DEPTH = 3;
   double val;
   if (s == BLACK){
     val = -infinity;
