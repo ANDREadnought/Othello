@@ -189,11 +189,11 @@ double Player::heuristic(Board* board)
   return board->countBlack() - board->countWhite();
 }
 
-double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color)  {
-	int mytiles = 0, opptiles = 0, myfrontier = 0, oppfrontier = 0;
+double uWashingtonHeuristic(Board* board)  {
+	int whitetiles = 0, blacktiles = 0, whitefrontier = 0, blackfrontier = 0;
 
-	int X1[] = {-1, -1, 0, 1, 1, 1, 0, -1};
-	int Y1[] = {0, 1, 1, 1, 0, -1, -1, -1};
+	int X[] = {-1, -1, 0, 1, 1, 1, 0, -1};
+	int Y[] = {0, 1, 1, 1, 0, -1, -1, -1};
 	
 	//Weights for Disk Stability
 	std::vector<std::vector<int>> weights;
@@ -240,12 +240,12 @@ double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color)  {
 
 	// Mobility
 	double mobscore;
-	mytiles = board->numValidMoves(my_color);
-	opptiles = board->numValidMoves(opp_color);
-	if(mytiles > opptiles)
-	  mobscore = (100.0 * mytiles)/(mytiles + opptiles);
-	else if(mytiles < opptiles)
-	  mobscore = -(100.0 * opptiles)/(mytiles + opptiles);
+	whitetiles = board->numValidMoves(WHITE);
+	blacktiles = board->numValidMoves(BLACK);
+	if(whitetiles > blacktiles)
+	  mobscore = (100.0 * whitetiles)/(whitetiles + blacktiles);
+	else if(whitetiles < blacktiles)
+	  mobscore = -(100.0 * blacktiles)/(whitetiles + blacktiles);
 	else mobscore = 0;
 
 	// Piece difference, frontier disks and disk square
@@ -253,104 +253,104 @@ double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color)  {
 	for(int i = 0; i < BOARDSIZE; i++)
 	  for(int j = 0; j < BOARDSIZE; j++)  
 	    {
-	      if(board->get(my_color, i, j))  
+	      if(board->get(WHITE, i, j))  
 		{
 		  diskstabilityscore += weights[i][j];
-		  mytiles++;
+		  whitetiles++;
 		} 
-	      else if(board->get(opp_color, i, j))  
+	      else if(board->get(BLACK, i, j))  
 		{
 		  diskstabilityscore -= weights[i][j];
-		  opptiles++;
+		  blacktiles++;
 		}
 	      if(board->occupied(i, j))  
 		{
 		  for(int k = 0; k < 8; k++)  {
-		    int x = i + X1[k]; int y = j + Y1[k];
+		    int x = i + X[k]; int y = j + Y[k];
 		    if(x >= 0 && x < 8 && y >= 0 && y < 8 && !board->occupied(i, j)) 
 		      {
-			if(board->get(my_color, i, j)) myfrontier++;
-			else oppfrontier++;
+			if(board->get(WHITE, i, j)) whitefrontier++;
+			else blackfrontier++;
 			break;
 		      }
 		  }
 		}
 	    }
 	double parityscore;
-	if(mytiles > opptiles)
-	  parityscore = (100.0 * mytiles)/(mytiles + opptiles);
-	else if(mytiles < opptiles)
-	  parityscore = -(100.0 * opptiles)/(mytiles + opptiles);
+	if(whitetiles > blacktiles)
+	  parityscore = (100.0 * whitetiles)/(whitetiles + blacktiles);
+	else if(whitetiles < blacktiles)
+	  parityscore = -(100.0 * blacktiles)/(whitetiles + blacktiles);
 	else parityscore = 0;
 	
 	double frontierscore;
-	if(myfrontier > oppfrontier)
-	  frontierscore = -(100.0 * myfrontier)/(myfrontier + oppfrontier);
-	else if(myfrontier < oppfrontier)
-	  frontierscore = (100.0 * oppfrontier)/(myfrontier + oppfrontier);
+	if(whitefrontier > blackfrontier)
+	  frontierscore = -(100.0 * whitefrontier)/(whitefrontier + blackfrontier);
+	else if(whitefrontier < blackfrontier)
+	  frontierscore = (100.0 * blackfrontier)/(whitefrontier + blackfrontier);
 	else frontierscore = 0;
 	
 
 	// "Corner Closeness"
 	// If corner isn't occupied, and the tile next to it is occupied
 	double closenessscore;
-	mytiles = 0; opptiles = 0;
+	whitetiles = 0; blacktiles = 0;
 	if(!board->occupied(0,0))  
 	  {
-	    if(board->get(my_color, 0, 1)) mytiles++;
-	    else if(board->get(opp_color, 0, 1)) opptiles++;
-	    if(board->get(my_color, 1, 1)) mytiles++;
-	    else if(board->get(opp_color, 1, 1)) opptiles++;
-	    if(board->get(my_color, 1, 0)) mytiles++;
-	    else if(board->get(opp_color, 1, 0)) opptiles++;
+	    if(board->get(WHITE, 0, 1)) whitetiles++;
+	    else if(board->get(BLACK, 0, 1)) blacktiles++;
+	    if(board->get(WHITE, 1, 1)) whitetiles++;
+	    else if(board->get(BLACK, 1, 1)) blacktiles++;
+	    if(board->get(WHITE, 1, 0)) whitetiles++;
+	    else if(board->get(BLACK, 1, 0)) blacktiles++;
 	  }
 	if(!board->occupied(0, 7))
 	  {
-	    if(board->get(my_color, 0, 6)) mytiles++;
-	    else if(board->get(opp_color, 0, 6)) opptiles++;
-	    if(board->get(my_color, 1, 6)) mytiles++;
-	    else if(board->get(opp_color, 1, 6)) opptiles++;
-	    if(board->get(my_color, 1, 7)) mytiles++;
-	    else if(board->get(opp_color, 1, 7)) opptiles++;
+	    if(board->get(WHITE, 0, 6)) whitetiles++;
+	    else if(board->get(BLACK, 0, 6)) blacktiles++;
+	    if(board->get(WHITE, 1, 6)) whitetiles++;
+	    else if(board->get(BLACK, 1, 6)) blacktiles++;
+	    if(board->get(WHITE, 1, 7)) whitetiles++;
+	    else if(board->get(BLACK, 1, 7)) blacktiles++;
 	  }
 	if(!board->occupied(7,0))
 	  {
-	    if(board->get(my_color, 7, 1)) mytiles++;
-	    else if(board->get(opp_color, 7, 1)) opptiles++;
-	    if(board->get(my_color, 6, 1)) mytiles++;
-	    else if(board->get(opp_color, 6, 1)) opptiles++;
-	    if(board->get(my_color, 6, 0)) mytiles++;
-	    else if(board->get(opp_color, 6, 0)) opptiles++;
+	    if(board->get(WHITE, 7, 1)) whitetiles++;
+	    else if(board->get(BLACK, 7, 1)) blacktiles++;
+	    if(board->get(WHITE, 6, 1)) whitetiles++;
+	    else if(board->get(BLACK, 6, 1)) blacktiles++;
+	    if(board->get(WHITE, 6, 0)) whitetiles++;
+	    else if(board->get(BLACK, 6, 0)) blacktiles++;
 	  }
 	if(!board->occupied(7,7)) 
 	  {
-	    if(board->get(my_color, 6, 7)) mytiles++;
-	    else if(board->get(opp_color, 6, 7)) opptiles++;
-	    if(board->get(my_color, 6, 6)) mytiles++;
-	    else if(board->get(opp_color, 6, 6)) opptiles++;
-	    if(board->get(my_color, 7, 6)) mytiles++;
-	    else if(board->get(opp_color, 7, 6)) opptiles++;
+	    if(board->get(WHITE, 6, 7)) whitetiles++;
+	    else if(board->get(BLACK, 6, 7)) blacktiles++;
+	    if(board->get(WHITE, 6, 6)) whitetiles++;
+	    else if(board->get(BLACK, 6, 6)) blacktiles++;
+	    if(board->get(WHITE, 7, 6)) whitetiles++;
+	    else if(board->get(BLACK, 7, 6)) blacktiles++;
 	  }
-	closenessscore = -12.5 * (mytiles - opptiles);
+	closenessscore = -12.5 * (whitetiles - blacktiles);
 
 	// Holding Corners?
 	double cornerscore;
-	mytiles = 0; opptiles = 0;
-	if(board->get(my_color, 0, 0)) mytiles++;
-	else if(board->get(opp_color, 0, 0)) opptiles++;
-	if(board->get(my_color, 0, 7)) mytiles++;
-	else if(board->get(opp_color, 0, 7)) opptiles++;
-	if(board->get(my_color, 7, 0)) mytiles++;
-	else if(board->get(opp_color, 7, 0)) opptiles++;
-	if(board->get(my_color, 7, 7)) mytiles++;
-	else if(board->get(opp_color, 7, 7)) opptiles++;
-	cornerscore = 25 * (mytiles - opptiles);
+	whitetiles = 0; blacktiles = 0;
+	if(board->get(WHITE, 0, 0)) whitetiles++;
+	else if(board->get(BLACK, 0, 0)) blacktiles++;
+	if(board->get(WHITE, 0, 7)) whitetiles++;
+	else if(board->get(BLACK, 0, 7)) blacktiles++;
+	if(board->get(WHITE, 7, 0)) whitetiles++;
+	else if(board->get(BLACK, 7, 0)) blacktiles++;
+	if(board->get(WHITE, 7, 7)) whitetiles++;
+	else if(board->get(BLACK, 7, 7)) blacktiles++;
+	cornerscore = 25 * (whitetiles - blacktiles);
 	
 	// final weighted score
 	double score = (10 * parityscore) + (801.724 * cornerscore) + 
 	  (382.026 * closenessscore) + (78.922 * mobscore) + 
 	  (74.396 * frontierscore) + (10 * diskstabilityscore);
-	return score;
+	return -1*score;
 }
 
 double minimax(Board* board, Side s, int depth)
@@ -379,7 +379,7 @@ double minimax(Board* board, Side s, int depth)
     double score = 0;
     temp->doMove(m, s);
     if (depth == MAX_DEPTH) {
-      score = uWashingtonHeuristic(temp, BLACK, WHITE);
+      score = uWashingtonHeuristic(temp);
     }
     else {
       if (temp->numValidMoves(opp) == 0) {
