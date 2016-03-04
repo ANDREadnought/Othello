@@ -356,45 +356,48 @@ double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color)  {
 double minimax(Board* board, Side s, int depth)
 {
   //board->printBoard();
-  int MAX_DEPTH = 1;
-  double min =(infinity);
+  Side opp;
+  if (s == BLACK){
+    opp = WHITE;
+  }
+  else{
+    opp = BLACK;
+  }
+  int MAX_DEPTH = 4;
+  double val;
+  if (s == BLACK){
+    val = -infinity;
+  }
+  else{
+    val = infinity;
+  }
+
   std::vector<Move*> *moves = getMoves(board, s);
   for (unsigned int i = 0; i < moves->size(); i++) {
     Move *m = (*moves)[i];
     Board * temp = board->copy();
     double score = 0;
-    //std::cerr << "depth: " << depth << " (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
-    if (s == BLACK){
-      temp->doMove(m, BLACK);
-      if (depth < MAX_DEPTH){
-	score = minimax(temp, WHITE, depth+1);
+    temp->doMove(m, s);
+    if (depth == MAX_DEPTH) {
+      score = uWashingtonHeuristic(temp, BLACK, WHITE);
+    }
+    else {
+      if (temp->numValidMoves(opp) == 0) {
+	score = minimax(temp, s, depth+1);
       }
       else{
-	//temp->printBoard();
-	score = uWashingtonHeuristic(temp, BLACK, WHITE);
-      }
-      if (-score < min){
-	min = -score;
+	score = minimax(temp, opp, depth+1);
       }
     }
-    else{
-      temp->doMove(m, WHITE);
-      if (depth < MAX_DEPTH){
-	score = minimax(temp, BLACK, depth+1);
-      }
-      else{
-	//temp->printBoard();
-	score = uWashingtonHeuristic(temp, WHITE, BLACK);
-      }
-      if (score < min){
-	min = score;
-      }
+    
+    if (s == BLACK && score > val){
+      val = score;
+    }
+    else if (s == WHITE && score < val){
+      val = score;
     }
     //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
     delete temp;
   }
-  if (s == BLACK){
-    return -min;
-  }
-  return min;
+    return val;
 }
