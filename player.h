@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "table.h"
+#include "timer.h"
 
 const double infinity = 987654321.32658;
 const std::string openingfile = "openingbook.txt";
@@ -20,6 +21,7 @@ protected:
   Move* chooseMove(std::vector<Move*>* moves);
   Side color, oppcolor;
   double heuristic(Board* board);
+  Timer timer;
 public:
     Player(Side side);
     ~Player();

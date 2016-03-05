@@ -86,6 +86,7 @@ Player::~Player() {
  * return NULL.
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
+  this->timer.setRemaining(msLeft);
     /* 
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
@@ -97,9 +98,14 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   todo = chooseMove(moves);
   this->board->doMove(todo, this->color);
   delete moves;
+  this->timer.updateRemaining();
+  if(this->timer.getRemaining() < (msLeft-5000))
+    std::cerr << "That took a long time... " << std::endl;
   return todo;
 }
 
+
+//Move Functionality to board
 std::vector<Move*>* getMoves(Board *board, Side s){
   std::vector<Move*>* ret = new std::vector<Move*>;
   for(int i = 0; i < BOARDSIZE; i++)
@@ -117,6 +123,8 @@ std::vector<Move*>* getMoves(Board *board, Side s){
   return ret;
 }
 
+
+//Move Functionality to board
 std::vector<Move*>* Player::getMoves()
 {
   std::vector<Move*>* ret = new std::vector<Move*>;
@@ -141,8 +149,14 @@ std::vector<Move*>* Player::getMoves()
   return ret;
 }
 
+/**
+ *@brief Chooses the the next move -- is given the list of next moves
+ * -- Searches with Minimax
+ *@param std::vector<Move*>* moves -- a vector of Move pointers.
+ **/
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
+  int MAX_DEPTH = 2;
   if(moves->size() < 1) return nullptr;
   double bestheur;
   if(this->color == BLACK)
@@ -165,9 +179,9 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
       /*if(this->color == WHITE) heur = uWashingtonHeuristic(testboard, WHITE, BLACK);
 	else heur = uWashingtonHeuristic(testboard, BLACK, WHITE);*/
       if (this->color == WHITE)
-	heur = minimax(testboard, BLACK, 1);
+	heur = minimax(testboard, BLACK, MAX_DEPTH);
       else
-	heur = minimax(testboard, WHITE, 1);
+	heur = minimax(testboard, WHITE, MAX_DEPTH);
       if(this->color == BLACK and heur > bestheur)
 	{
 	  bestheur = heur;
@@ -184,11 +198,20 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
   return winner;
 }
 
+/**
+ *@brief Naive heuristic -- You gotta start somewhere
+ **/
 double Player::heuristic(Board* board)
 {
   return board->countBlack() - board->countWhite();
 }
 
+
+/**
+ *@brief The heuristic combination that researchers at the University of
+ *of Washington determined to be best
+ *@param Board* board -- a pointer to the board representation we wish to evaluate
+ **/
 double uWashingtonHeuristic(Board* board)  {
 	int whitetiles = 0, blacktiles = 0, whitefrontier = 0, blackfrontier = 0;
 
@@ -353,6 +376,12 @@ double uWashingtonHeuristic(Board* board)  {
 	return -1*score;
 }
 
+/**
+ *@brief Minixmax algorithm for searching moves
+ *@param Board* board -- the board to minimax on
+ *@param Side s -- the current side of the player
+ *@param int depth -- how deep to search
+ **/
 double minimax(Board* board, Side s, int depth)
 {
   //board->printBoard();
@@ -363,7 +392,6 @@ double minimax(Board* board, Side s, int depth)
   else{
     opp = BLACK;
   }
-  int MAX_DEPTH = 3;
   double val;
   if (s == BLACK){
     val = -infinity;
@@ -378,15 +406,15 @@ double minimax(Board* board, Side s, int depth)
     Board * temp = board->copy();
     double score = 0;
     temp->doMove(m, s);
-    if (depth == MAX_DEPTH) {
+    if (depth == 0) {
       score = uWashingtonHeuristic(temp);
     }
     else {
       if (temp->numValidMoves(opp) == 0) {
-	score = minimax(temp, s, depth+1);
+	score = minimax(temp, s, depth-1);
       }
       else{
-	score = minimax(temp, opp, depth+1);
+	score = minimax(temp, opp, depth-1);
       }
     }
     
