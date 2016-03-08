@@ -429,3 +429,60 @@ double minimax(Board* board, Side s, int depth)
   }
     return val;
 }
+
+double alphabeta(Board* board, Side s, int depth, double alpha, double beta)
+{
+  //board->printBoard();
+  Side opp;
+  if (s == BLACK){
+    opp = WHITE;
+  }
+  else{
+    opp = BLACK;
+  }
+  double val;
+  if (s == BLACK){
+    val = -infinity;
+  }
+  else{
+    val = infinity;
+  }
+
+  std::vector<Move*> *moves = getMoves(board, s);
+  for (unsigned int i = 0; i < moves->size(); i++) {
+    Move *m = (*moves)[i];
+    Board * temp = board->copy();
+    double score = 0;
+    temp->doMove(m, s);
+    if (depth == 0) {
+      score = uWashingtonHeuristic(temp);
+    }
+    else {
+      if (temp->numValidMoves(opp) == 0) {
+	score = minimax(temp, s, depth-1, alpha, beta);
+      }
+      else{
+	score = minimax(temp, opp, depth-1, alpha, beta);
+      }
+    }
+    
+    if (s == BLACK && score > val){
+      val = score;
+      if (score > alpha) {
+	alpha = score;
+      }
+    }
+    else if (s == WHITE && score < val){
+      val = score;
+      if (score < beta) {
+	beta = score;
+      }
+    }
+    if (alpha > beta) {
+      break;
+    }
+    //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
+    delete temp;
+  }
+    return val;
+}
