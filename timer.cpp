@@ -1,5 +1,6 @@
 #include "timer.h"
 #include "common.h"
+#include <iostream>
 
 
 /**
@@ -27,10 +28,10 @@ void Timer::startTimer(int totalTime)
   if(!this->started)
     {
       this->started = true;
-      this->turnsRemaining =  35;
-      this-> timePerMove = totalTime / 60;
-      this->start = std::chrono::steady_clock::now();
+      this->turnsRemaining = 35;
+      this-> timePerMove = totalTime / this->turnsRemaining;
     }
+  this->start = std::chrono::system_clock::now();
 }
 
 /**
@@ -38,15 +39,13 @@ void Timer::startTimer(int totalTime)
  **/
 void Timer::updateRemaining()
 {
-  this->end = std::chrono::steady_clock::now();
-  try
-    {
-      this->remaining = this->remaining - std::chrono::duration_cast<std::chrono::milliseconds>(this->end - this->start);
-    }
-  catch(std::exception)
-    {
-    }
-  this->start = std::chrono::steady_clock::now();
+  this->end = std::chrono::system_clock::now();
+
+  std::chrono::system_clock::duration elapsed = this->end - this->start;
+  //std::cerr << "elapsed: " << (std::chrono::duration_cast<std::chrono::milliseconds>(elapsed)).count() << std::endl;
+  this->remaining = this->remaining - elapsed;
+
+  this->start = std::chrono::system_clock::now();
 }
 
 /**
@@ -54,15 +53,21 @@ void Timer::updateRemaining()
  **/
 int Timer::getRemaining()
 {
-  return remaining.count();
+  return (std::chrono::duration_cast<std::chrono::milliseconds>(remaining)).count();
 }
 
 bool Timer::canContinue()
 {
+  if(this->getRemaining() < 0) return true;
   this->updateRemaining();
   if(this->getRemaining() / this->turnsRemaining < timePerMove)
     {
       return false;
     }
-  else return true;
+  return true;
+}
+
+void Timer::progressTurn()
+{
+  this->turnsRemaining--;
 }

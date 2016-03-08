@@ -24,6 +24,7 @@ protected:
   Side color, oppcolor;
   double heuristic(Board* board);
   Timer timer;
+  bool timing;
 public:
     Player(Side side);
     ~Player();

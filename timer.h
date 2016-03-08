@@ -16,13 +16,14 @@ class Timer
   void setRemaining(int count);
   int getRemaining();
   bool canContinue();
+  void progressTurn();
  private:
   int turnsRemaining;
   int timePerMove;
   bool started;
-  std::chrono::milliseconds remaining;
-  std::chrono::steady_clock::time_point start;
-  std::chrono::steady_clock::time_point end;
+  std::chrono::system_clock::duration remaining;
+  std::chrono::system_clock::time_point start;
+  std::chrono::system_clock::time_point end;
 };
 
 #endif
