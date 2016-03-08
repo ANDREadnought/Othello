@@ -91,62 +91,19 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
+  
   this->board->doMove(opponentsMove, this->oppcolor);
   std::vector<Move*> *moves;
   Move* todo;
-  moves = getMoves();
+  moves = board->getMoves(this->color);
   todo = chooseMove(moves);
+  std::cerr << "Here" << std::endl;
   this->board->doMove(todo, this->color);
   delete moves;
   this->timer.updateRemaining();
   if(this->timer.getRemaining() < (msLeft-5000))
     std::cerr << "That took a long time... " << std::endl;
   return todo;
-}
-
-
-//Move Functionality to board
-std::vector<Move*>* getMoves(Board *board, Side s){
-  std::vector<Move*>* ret = new std::vector<Move*>;
-  for(int i = 0; i < BOARDSIZE; i++)
-  {
-    for(int j = 0; j < BOARDSIZE; j++)
-      {
-	  Move* test = new Move(i, j);
-	  if(board->checkMove(test, s))
-	  {
-	      ret->push_back(test);
-	  } 
-	  else delete test;
-      }
-  }
-  return ret;
-}
-
-
-//Move Functionality to board
-std::vector<Move*>* Player::getMoves()
-{
-  std::vector<Move*>* ret = new std::vector<Move*>;
-  for(int i = 0; i < BOARDSIZE; i++)
-    {
-      for(int j = 0; j < BOARDSIZE; j++)
-	{
-	  Move* test = new Move(i, j);
-	  if(this->board->checkMove(test, this->color))
-	    {
-	      ret->push_back(test);
-	    } 
-	  else delete test;
-	}
-    }
-  // for(int i = 0; i < ret->size(); i++)
-  //   {
-  //     Move* test2 = (*ret)[i];
-  //     std::cerr << test2->getX() << " " << test2->getY() << std::endl;
-  //   }
-  // std::cerr << std::endl;
-  return ret;
 }
 
 /**
@@ -156,7 +113,6 @@ std::vector<Move*>* Player::getMoves()
  **/
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
-  int MAX_DEPTH = 2;
   if(moves->size() < 1) return nullptr;
   double bestheur;
   if(this->color == BLACK)
@@ -164,37 +120,40 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
       bestheur = -infinity;
     }
   else bestheur = infinity;
-  Move* winner;
-  
-  //Make much better heuristic here.
-  //pick first move found
-  //winner = (*moves)[0];
-  //maximize number of pieces on next turn.
-  for(unsigned int i = 0; i < moves->size(); i++)
+  Move* winner = nullptr;
+  int search_depth = 1; 
+  while(timer.canContinue())
     {
-      double heur;
-      Board* testboard = this->board->copy();
-      testboard->doMove((*moves)[i], this->color);
-      //heur = heuristic(testboard);
-      /*if(this->color == WHITE) heur = uWashingtonHeuristic(testboard, WHITE, BLACK);
-	else heur = uWashingtonHeuristic(testboard, BLACK, WHITE);*/
-      if (this->color == WHITE)
-	heur = minimax(testboard, BLACK, MAX_DEPTH);
-      else
-	heur = minimax(testboard, WHITE, MAX_DEPTH);
-      if(this->color == BLACK and heur > bestheur)
+      Move* newWinner = nullptr;
+      for(unsigned int i = 0; i < moves->size(); i++)
 	{
-	  bestheur = heur;
-	  winner = (*moves)[i];
+	  //only let new winner be the best move if we finish
+	  //searching the entire ply 
+	  newWinner = nullptr;
+	  double heur;
+	  Board* testboard = this->board->copy();
+	  testboard->doMove((*moves)[i], this->color);
+	  if (this->color == WHITE)
+	    heur = minimax(testboard, BLACK, search_depth);
+	  else
+	    heur = minimax(testboard, WHITE, search_depth);
+	  if(this->color == BLACK and heur > bestheur)
+	    {
+	      bestheur = heur;
+	      newWinner = (*moves)[i];
+	    }
+	  else if(this->color == WHITE and heur < bestheur) 
+	    {
+	      bestheur = heur;
+	      newWinner = (*moves)[i];
+	    }
 	}
-      else if(this->color == WHITE and heur < bestheur) 
-	{
-	  bestheur = heur;
-	  winner = (*moves)[i];
-	}
-      //std::cerr << heur << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
+      winner = newWinner;
+      if(!winner) std::cerr << "empty" << std::endl;
+      std::cerr << "here" << std::endl;
+      search_depth++; 
+      std::cerr << bestheur << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
     }
-  std::cerr << bestheur << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
   return winner;
 }
 
@@ -382,7 +341,7 @@ double uWashingtonHeuristic(Board* board)  {
  *@param Side s -- the current side of the player
  *@param int depth -- how deep to search
  **/
-double minimax(Board* board, Side s, int depth)
+double Player::minimax(Board* board, Side s, int depth)
 {
   //board->printBoard();
   Side opp;
@@ -399,38 +358,45 @@ double minimax(Board* board, Side s, int depth)
   else{
     val = infinity;
   }
-
-  std::vector<Move*> *moves = getMoves(board, s);
-  for (unsigned int i = 0; i < moves->size(); i++) {
-    Move *m = (*moves)[i];
-    Board * temp = board->copy();
-    double score = 0;
-    temp->doMove(m, s);
-    if (depth == 0) {
-      score = uWashingtonHeuristic(temp);
-    }
-    else {
-      if (temp->numValidMoves(opp) == 0) {
-	score = minimax(temp, s, depth-1);
+  std::vector<Move*> *moves = board->getMoves(board, s);
+  for (unsigned int i = 0; i < moves->size(); i++) 
+    {
+      //break if out of time.
+      if(!this->timer.canContinue()) return val;
+      
+      Move *m = (*moves)[i];
+      Board * temp = board->copy();
+      double score = 0;
+      temp->doMove(m, s);
+       std::cerr << "here" << std::endl;
+      if (depth == 0) {
+	score = uWashingtonHeuristic(temp);
       }
-      else{
-	score = minimax(temp, opp, depth-1);
+      else 
+	{
+	  if (temp->numValidMoves(opp) == 0) 
+	    {
+	      score = minimax(temp, s, depth-1);
+	    }
+	  else
+	    {
+	      score = minimax(temp, opp, depth-1);
+	    }
+	}
+      
+      if (s == BLACK && score > val){
+	val = score;
       }
+      else if (s == WHITE && score < val){
+	val = score;
+      }
+      //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
+      delete temp;
     }
-    
-    if (s == BLACK && score > val){
-      val = score;
-    }
-    else if (s == WHITE && score < val){
-      val = score;
-    }
-    //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
-    delete temp;
-  }
-    return val;
+  return val;
 }
 
-double alphabeta(Board* board, Side s, int depth, double alpha, double beta)
+double Player::alphabeta(Board* board, Side s, int depth, double alpha, double beta)
 {
   //board->printBoard();
   Side opp;
@@ -448,7 +414,7 @@ double alphabeta(Board* board, Side s, int depth, double alpha, double beta)
     val = infinity;
   }
 
-  std::vector<Move*> *moves = getMoves(board, s);
+  std::vector<Move*> *moves = board->getMoves(board, s);
   for (unsigned int i = 0; i < moves->size(); i++) {
     Move *m = (*moves)[i];
     Board * temp = board->copy();
@@ -459,10 +425,10 @@ double alphabeta(Board* board, Side s, int depth, double alpha, double beta)
     }
     else {
       if (temp->numValidMoves(opp) == 0) {
-	score = minimax(temp, s, depth-1, alpha, beta);
+	score = alphabeta(temp, s, depth-1, alpha, beta);
       }
       else{
-	score = minimax(temp, opp, depth-1, alpha, beta);
+	score = alphabeta(temp, opp, depth-1, alpha, beta);
       }
     }
     

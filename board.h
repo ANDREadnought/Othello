@@ -2,14 +2,14 @@
 #define __BOARD_H__
 
 #include <bitset>
+#include <vector>
 #include "common.h"
-using namespace std;
 
 class Board {
    
 private:
-    bitset<64> black;
-    bitset<64> taken;    
+  std::bitset<64> black;
+  std::bitset<64> taken;    
     void set(Side side, int x, int y);
 
  public:
@@ -29,6 +29,8 @@ private:
     int count(Side side);
     int countBlack();
     int countWhite();
+    std::vector<Move*>* getMoves(Board* board, Side s);
+    std::vector<Move*>* getMoves(Side color);
 
     void setBoard(char data[]);
 };

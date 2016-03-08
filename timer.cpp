@@ -5,7 +5,10 @@
 /**
  *@brief empty constructor
  **/
-Timer::Timer(){}
+Timer::Timer()
+{
+  this->started = false;
+}
 /**
  *@brief Set the amount of time remaining
  *@param int count -- the new remaining amount of time
@@ -13,15 +16,21 @@ Timer::Timer(){}
 void Timer::setRemaining(int count)
 {
   this->remaining = std::chrono::milliseconds(count);
-  this->startTimer();
+  this->startTimer(count); 
 }
 
 /**
  *@brief Starts the start timer for timing durations passed.
  **/
-void Timer::startTimer()
+void Timer::startTimer(int totalTime)
 {
-  this->start = std::chrono::steady_clock::now();
+  if(!this->started)
+    {
+      this->started = true;
+      this->turnsRemaining =  35;
+      this-> timePerMove = totalTime / 60;
+      this->start = std::chrono::steady_clock::now();
+    }
 }
 
 /**
@@ -46,4 +55,14 @@ void Timer::updateRemaining()
 int Timer::getRemaining()
 {
   return remaining.count();
+}
+
+bool Timer::canContinue()
+{
+  this->updateRemaining();
+  if(this->getRemaining() / this->turnsRemaining < timePerMove)
+    {
+      return false;
+    }
+  else return true;
 }

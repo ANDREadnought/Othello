@@ -192,3 +192,49 @@ int Board::numValidMoves(Side side)
     }
   return ret;
 }
+
+
+//Move Functionality to board
+std::vector<Move*>* Board::getMoves(Board *board, Side s){
+  //MEMORY LEAK?!!!!?
+  std::vector<Move*>* ret = new std::vector<Move*>;
+  for(int i = 0; i < BOARDSIZE; i++)
+  {
+    for(int j = 0; j < BOARDSIZE; j++)
+      {
+	  Move* test = new Move(i, j);
+	  if(board->checkMove(test, s))
+	  {
+	      ret->push_back(test);
+	  } 
+	  else delete test;
+      }
+  }
+  return ret;
+}
+
+
+//Move Functionality to board
+std::vector<Move*>* Board::getMoves(Side color)
+{
+  std::vector<Move*>* ret = new std::vector<Move*>;
+  for(int i = 0; i < BOARDSIZE; i++)
+    {
+      for(int j = 0; j < BOARDSIZE; j++)
+	{
+	  Move* test = new Move(i, j);
+	  if(this->checkMove(test, color))
+	    {
+	      ret->push_back(test);
+	    } 
+	  else delete test;
+	}
+    }
+  // for(int i = 0; i < ret->size(); i++)
+  //   {
+  //     Move* test2 = (*ret)[i];
+  //     std::cerr << test2->getX() << " " << test2->getY() << std::endl;
+  //   }
+  // std::cerr << std::endl;
+  return ret;
+}

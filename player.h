@@ -19,6 +19,8 @@ protected:
   Board* board;
   std::vector<Move*>* getMoves();
   Move* chooseMove(std::vector<Move*>* moves);
+  double minimax(Board* board, Side s, int depth);
+  double alphabeta(Board* board, Side s, int depth, double alpha, double beta);
   Side color, oppcolor;
   double heuristic(Board* board);
   Timer timer;
