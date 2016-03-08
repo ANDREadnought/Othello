@@ -459,10 +459,10 @@ double alphabeta(Board* board, Side s, int depth, double alpha, double beta)
     }
     else {
       if (temp->numValidMoves(opp) == 0) {
-	score = minimax(temp, s, depth-1, alpha, beta);
+	score = alphabeta(temp, s, depth-1, alpha, beta);
       }
       else{
-	score = minimax(temp, opp, depth-1, alpha, beta);
+	score = alphabeta(temp, opp, depth-1, alpha, beta);
       }
     }
     
