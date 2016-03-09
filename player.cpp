@@ -428,7 +428,7 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
   else{
     val = infinity;
   }
-
+  
   std::vector<Move*> *moves = board->getMoves(board, s);
   for (unsigned int i = 0; i < moves->size(); i++) 
     {
