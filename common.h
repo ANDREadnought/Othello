@@ -1,7 +1,8 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
-#include <exception>
 
+#include <exception>
+#include <vector>
 class FileNotOpenError : public std::exception {};
 
 enum Side { 
@@ -26,5 +27,7 @@ public:
     void setX(int x) { this->x = x; }
     void setY(int y) { this->y = y; }
 };
+
+void cleanMoves(std::vector<Move*>* moves);
 
 #endif

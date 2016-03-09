@@ -101,7 +101,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   todo = chooseMove(moves);
   this->board->doMove(todo, this->color);
   this->timer.progressTurn();
-  delete moves;
+  cleanMoves(moves);
   std::cerr << "--------------------------" << std::endl << std::endl;
   return todo;
 }
@@ -151,6 +151,7 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 	      bestheur = heur;
 	      newWinner = (*moves)[i];
 	    }
+	  delete testboard;
 	}
       if(timer.canContinue() and newWinner) winner = newWinner;
       else break;
@@ -367,10 +368,10 @@ double Player::minimax(Board* board, Side s, int depth)
   for (unsigned int i = 0; i < moves->size(); i++) 
     {
       //break if out of time.
-      if(!this->timer.canContinue()) return val;
-      
+      if(!this->timer.canContinue()) break;
+
       Move *m = (*moves)[i];
-      Board * temp = board->copy();
+      Board* temp = board->copy();
       double score = 0;
       temp->doMove(m, s);
       if (depth == 0) {
@@ -397,6 +398,7 @@ double Player::minimax(Board* board, Side s, int depth)
       //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
       delete temp;
     }
+  cleanMoves(moves);
   return val;
 }
 
@@ -430,8 +432,9 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
   std::vector<Move*> *moves = board->getMoves(board, s);
   for (unsigned int i = 0; i < moves->size(); i++) 
     {
-      if(!this->timer.canContinue()) return val;
-      
+      //Break if out of time.
+      if(!this->timer.canContinue()) break;
+
       Move *m = (*moves)[i];
       Board * temp = board->copy();
       double score = 0;
@@ -475,5 +478,6 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
       delete temp;
     }
+  cleanMoves(moves);
   return val;
 }
