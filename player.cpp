@@ -125,7 +125,7 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
     }
   else bestheur = infinity;
 
-  Move* winner = nullptr;
+  Move* winner = (*moves)[0];
   int search_depth = 1; 
   while(search_depth <= MAX_DEPTH)
     { 
