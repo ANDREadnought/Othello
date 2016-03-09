@@ -95,8 +95,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      */ 
   std::cerr << std::endl << "--------------------------" << std::endl;
   this->board->doMove(opponentsMove, this->oppcolor);
-  std::vector<Move*> *moves;
-  Move* todo;
+  std::vector<Move*> *moves = nullptr;
+  Move* todo = nullptr;
   moves = board->getMoves(this->color);
   todo = chooseMove(moves);
   this->board->doMove(todo, this->color);
