@@ -238,3 +238,10 @@ std::vector<Move*>* Board::getMoves(Side color)
   // std::cerr << std::endl;
   return ret;
 }
+
+std::string Board::toString()
+{
+  std::string ret = this->taken.to_string();
+  ret.append(this->black.to_string());
+  return ret;
+}

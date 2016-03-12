@@ -7,11 +7,15 @@
  */
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
+
     testingMinimax = false;
     this->timing = true;
+    this->_solved = false;
+    this->_saved = false;
 
+    system("./extract.sh");
     // Transposition Table
-    this->trans = new Table(transfile);
+    this->trans = new Table(transfile, transmem);
     try // Are we going to be using this across games?
       {
 	this->trans->load();
@@ -22,7 +26,7 @@ Player::Player(Side side) {
       }
     
     // Opening Book
-    this->openings = new Table(openingfile);
+    this->openings = new Table(openingfile, openingmem);
     try
       {
 	this->openings->load();
@@ -31,11 +35,23 @@ Player::Player(Side side) {
       {
 	std::cerr << "Opening book not loaded" << std::endl;
       }
+    
+    this->closings = new Table(closingfile, closingmem);
+    try
+      {
+	this->openings->load();
+      }
+    catch(FileNotOpenError())
+      {
+	std::cerr << "Closing book not loaded" << std::endl;
+      }
 
     this->board = new Board();
     this->color = side;
     if(side == WHITE) this->oppcolor = BLACK;
     else this->oppcolor = WHITE;
+    system("./compress.sh");
+    std::cerr << "Constructed!" << std::endl;
     /* 
      * TODO: Do any initialization you need to do here (setting up the board,
      * precalculating things, etc.) However, remember that you will only have
@@ -48,6 +64,8 @@ Player::Player(Side side) {
  */
 Player::~Player() {
   delete board;
+
+  system("./extract.sh");
   if(this->trans)
     {
       try
@@ -72,6 +90,61 @@ Player::~Player() {
 	}
       delete openings;
     }
+  if(this->closings)
+    {
+      try
+  	{
+  	  this->openings->save();
+  	}
+      catch(FileNotOpenError())
+  	{
+  	  std::cerr << "Transposition Table not saved" << std::endl;
+  	}
+      delete openings;
+    }
+  system("./compress.sh");
+}
+
+void Player::saveTables()
+{
+  system("./extract.sh");
+  if(this->trans) 
+    {
+      try
+	{
+	  this->trans->save();
+	}
+      catch(FileNotOpenError())
+	{
+	  std::cerr << "Transposition Table not saved." << std::endl;
+	  std::cerr << "File could not be opened." << std::endl;
+	}
+    }
+  if(this->openings)
+    {
+      try
+	{
+	  this->openings->save();
+	}
+      catch(FileNotOpenError())
+	{
+	  std::cerr << "Opening Table not saved." << std::endl;
+	  std::cerr << "File could not be opened." << std::endl;
+	}
+    }
+   if(this->closings)
+    {
+      try
+   	{
+   	  this->closings->save();
+   	}
+      catch(FileNotOpenError())
+   	{
+   	  std::cerr << "Closing Table not saved." << std::endl;
+   	  std::cerr << "File could not be opened." << std::endl;
+   	}
+    }
+   system("./compress.sh");
 }
 
 /*
@@ -102,7 +175,16 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   this->board->doMove(todo, this->color);
   this->timer.progressTurn();
   cleanMoves(moves);
+  std::cerr << "Opening Table Entries: " << this->openings->size() << std::endl;
+  std::cerr << "Opening Table Buckets: " << this->openings->bucket_count() << std::endl;
+  std::cerr << "Transposition Table Entries: " << this->trans->size() << std::endl;
+  std::cerr << "Transposition Table Buckets: " << this->trans->bucket_count() << std::endl;
+  std::cerr << "Closing Table Entries: " << this->closings->size() << std::endl;
+  std::cerr << "Closing Table Buckets: " << this->closings->bucket_count() << std::endl;
   std::cerr << "--------------------------" << std::endl << std::endl;
+  if(this->_solved && !this->_saved && this->timer.getRemaining() > 20000) this->saveTables();
+  //return nullptr;
+
   return todo;
 }
 
@@ -125,10 +207,18 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
     }
   else bestheur = infinity;
 
+  Entry* entry = nullptr;
   Move* winner = (*moves)[0];
   int search_depth = 1; 
   while(search_depth <= MAX_DEPTH)
     { 
+      
+      entry = this->trans->contains(board);
+      if(entry) 
+	{
+	  Move* move = entry->getMove();
+	  moves->insert(moves->begin(), move);
+	}
       //only let new winner be the best move if we finish
       //searching the entire ply 
       Move* newWinner = winner;
@@ -157,6 +247,7 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
       else break;
       search_depth++; 
     }
+  if(search_depth-1 == MAX_DEPTH) this->_solved = true;
   std::cerr << "depth: " << search_depth-1 << std::endl;
   std::cerr << "Evaluation: " << bestheur << std::endl;
   std::cerr << "Best move: " << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
@@ -429,7 +520,14 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
     val = infinity;
   }
   
+  Move* winner = nullptr;
   std::vector<Move*> *moves = board->getMoves(board, s);
+  Entry* entry = this->trans->contains(board);
+  if(entry)
+    {
+      Move* move = entry->getMove();
+      moves->insert(moves->begin(), move);
+    }
   for (unsigned int i = 0; i < moves->size(); i++) 
     {
       //Break if out of time.
@@ -458,6 +556,7 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       if (s == BLACK && score > val)
 	{
 	  val = score;
+	  winner = m;
 	  if (score > alpha)
 	    {
 	      alpha = score;
@@ -466,6 +565,7 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       else if (s == WHITE && score < val)
 	{
 	  val = score;
+	  winner = m;
 	  if (score < beta)
 	    {
 	      beta = score;
@@ -478,6 +578,8 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
       delete temp;
     }
+  if(!entry and winner) this->trans->add(board, winner, val, depth);
+  else if(entry && winner && entry->depth < depth) this->trans->update(board, winner, val, depth, entry->depth);
   cleanMoves(moves);
   return val;
 }
