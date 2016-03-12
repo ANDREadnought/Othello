@@ -157,7 +157,7 @@ int nodes = 0;
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   int MAX_DEPTH = 20;
-  if(!this->timing) MAX_DEPTH = 4;
+  if(!this->timing) MAX_DEPTH = 3;
   if(moves->size() < 1) return nullptr;
   //preset heuristic for keeping track of max
   double bestheur;
@@ -237,7 +237,6 @@ double Player::heuristic(Board* board)
 {
   return board->countBlack() - board->countWhite();
 }
-
 
 /**
  *@brief The heuristic combination that researchers at the University of
@@ -417,7 +416,7 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       }
       else if (depth == 0)
 	{
-	  score = uWashingtonHeuristic(temp);
+	  score = heuristic(temp);
 	}
       else
 	{
