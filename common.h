@@ -21,6 +21,8 @@ public:
     }
     ~Move() {}
 
+    Move* copy();
+    
     int getX() { return x; }
     int getY() { return y; }
 

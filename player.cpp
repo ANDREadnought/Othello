@@ -100,6 +100,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   Move* todo = nullptr;
   moves = board->getMoves(this->color);
   todo = chooseMove(moves);
+  todo = todo->copy();
   this->board->doMove(todo, this->color);
   this->timer.progressTurn();
   cleanMoves(moves);
@@ -116,7 +117,7 @@ int nodes = 0;
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   int MAX_DEPTH = 20;
-  if(!this->timing) MAX_DEPTH = 8;
+  if(!this->timing) MAX_DEPTH = 4;
   if(moves->size() < 1) return nullptr;
   //this->boardToMoves = new std::unordered_map<Board*, std::vector<Move*>*>();
   //preset heuristic for keeping track of max
@@ -184,7 +185,7 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
     }
   std::cerr << "depth: " << search_depth-1 << std::endl;
   std::cerr << "Nodes: " << nodes << std::endl;
-  std::cerr << "Hash Table Entrieds: " << boardToMoves->size() << std::endl;
+  //std::cerr << "Hash Table Entrieds: " << boardToMoves->size() << std::endl;
   std::cerr << "Evaluation: " << bestheur << std::endl;
   std::cerr << "Best move: " << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
   //delete boardToMoves;
@@ -378,6 +379,7 @@ double uWashingtonHeuristic(Board* board)  {
  **/
 double Player::minimax(Board* board, Side s, int depth)
 {
+  nodes++;
   //board->printBoard();
   Side opp;
   if (s == BLACK){
@@ -537,6 +539,7 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
 	}
       if (alpha > beta)
 	{
+	  delete temp;
 	  break;
 	}
       //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
