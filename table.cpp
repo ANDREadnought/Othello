@@ -52,7 +52,7 @@ Move* Entry::getMove()
 Table::Table(std::string filename, int max_mem)
 {
   this->filename = filename;
-  this->table = new std::unordered_map<std::string, Entry*>;
+  this->table = new std::unordered_map<std::string, Entry*>(buckets);
   this->_size = 0;
   this->_bucket_count = 0;
   this->_memory = sizeof(Table);

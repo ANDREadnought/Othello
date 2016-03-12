@@ -32,6 +32,7 @@ private:
     std::vector<Move*>* getMoves(Board* board, Side s);
     std::vector<Move*>* getMoves(Side color);
     std::string toString();
+    void printBoard();
 
     void setBoard(char data[]);
 };

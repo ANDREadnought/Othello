@@ -9,6 +9,8 @@
 #include "common.h"
 #include "board.h"
 
+const int buckets = 1000000;
+
 class Entry
 {
  public:
@@ -23,6 +25,7 @@ class Entry
   double score;
   int depth;
   int pop;
+
   Move* getMove();
 };
 

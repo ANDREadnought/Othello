@@ -39,7 +39,7 @@ Player::Player(Side side) {
     this->closings = new Table(closingfile, closingmem);
     try
       {
-	this->openings->load();
+	this->closings->load();
       }
     catch(FileNotOpenError())
       {
@@ -208,12 +208,15 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * process the opponent's opponents move before calculating your own move
      */ 
   std::cerr << std::endl << "--------------------------" << std::endl;
+  std::string color = (this->color==WHITE)?"WHITE":"BLACK";
+  std::cerr << "ANDREadnought -- " << color << std::endl;
   this->board->doMove(opponentsMove, this->oppcolor);
   std::vector<Move*> *moves = nullptr;
   Move* todo = nullptr;
   moves = board->getMoves(this->color);
   todo = chooseMove(moves);
-  todo = todo->copy();
+  if(todo) todo = todo->copy();
+  else std::cerr << "Best Move: PASS :( " << std::endl;
   this->board->doMove(todo, this->color);
   this->timer.progressTurn();
   cleanMoves(moves);
@@ -224,9 +227,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   std::cerr << "Closing Table Entries: " << this->closings->size() << std::endl;
   std::cerr << "Closing Table Buckets: " << this->closings->bucket_count() << std::endl;
   std::cerr << "--------------------------" << std::endl << std::endl;
-  if(this->_solved && !this->_saved && this->timer.getRemaining() > 20000) this->saveTables();
-  //return nullptr;
-
+  if(this->_solved && !this->_saved && (this->timer.getRemaining() > 20000 || !this->timing)) this->saveTables();
+  
   return todo;
 }
 
@@ -513,7 +515,7 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       }
       else if (depth == 0)
 	{
-	  score = heuristic(temp);
+	  score = uWashingtonHeuristic(temp);
 	}
       else
 	{

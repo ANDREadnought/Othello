@@ -18,6 +18,7 @@ const int transmem = 300000000;
 const int closingmem = 100000000;
 const int openingmem = 100000000;
 
+
 class Player {
 protected:
   Table *openings, *trans, *closings;

@@ -1,4 +1,5 @@
 #include "board.h"
+#include <iostream>
 
 /*
  * Make a standard 8x8 othello board and initialize it to the standard setup.
@@ -245,3 +246,23 @@ std::string Board::toString()
   ret.append(this->black.to_string());
   return ret;
 }
+
+void Board::printBoard() {
+  for (int i = 0; i < BOARDSIZE; i++) {
+    for (int j = 0; j < BOARDSIZE; j++) {
+      if (black[i*BOARDSIZE + j]) {
+	std::cerr << "b";
+      }
+      else if (taken[i*BOARDSIZE+j]) {
+	std::cerr << "w";
+      }
+      else{
+	std::cerr << " ";
+      }
+    }
+    std::cerr << std::endl;
+  }
+  std::cerr << std::endl;
+}
+
+

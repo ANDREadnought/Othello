@@ -2,6 +2,7 @@
 #include "common.h"
 #include "player.h"
 #include "board.h"
+#include <iostream>
 
 // Use this file to test your minimax implementation (2-ply depth, with a
 // heuristic of the difference in number of pieces).
@@ -12,9 +13,9 @@ int main(int argc, char *argv[]) {
     char boardData[64] = {
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
-        ' ', 'b', ' ', ' ', ' ', ' ', ' ', ' ', 
-        'b', 'w', 'b', 'b', 'b', 'b', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
+        ' ', ' ', ' ', 'w', 'b', ' ', ' ', ' ', 
+        ' ', ' ', ' ', 'b', 'w', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
@@ -23,29 +24,32 @@ int main(int argc, char *argv[]) {
     board->setBoard(boardData);
 
     // Initialize player as the white player, and set testing_minimax flag.
-    Player *player = new Player(WHITE);
-    player->testingMinimax = true;
+    Player *player1 = new Player(BLACK);    
+    Player *player2 = new Player(WHITE);
+    Side turn = BLACK;
 
-
-    /** 
-     * TODO: Write code to set your player's internal board state to the 
-     * example state.
-     */
-
-    // Get player's move and check if it's right.
-    Move *move = player->doMove(NULL, 0);
-
-    if (move != NULL && move->x == 1 && move->y == 1) {
-        printf("Correct move: (1, 1)");
-    } else {
-        printf("Wrong move: got ");
-        if (move == NULL) {
-            printf("PASS");
-        } else {
-            printf("(%d, %d)", move->x, move->y);
-        }
-        printf(", expected (1, 1)\n");
+    Move *last = NULL;
+    while (!board->isDone()){
+      Move *m;
+      if (turn == BLACK) {
+	m = player1->doMove(last, -1);
+      }
+      else if (turn == WHITE) {
+	m = player2->doMove(last, -1);
+      }
+      board->doMove(m, turn);
+      if (turn == BLACK) {
+	if (board->numValidMoves(WHITE) > 0){
+	  turn = WHITE;
+	}
+      }
+      else{
+	if (board->numValidMoves(BLACK) > 0) {
+	  turn = BLACK;
+	}
+      }
+      delete last;
+      last = m;
+      board->printBoard();
     }
-
-    return 0;
 }
