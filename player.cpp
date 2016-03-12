@@ -41,7 +41,47 @@ Player::Player(Side side) {
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
-    //this->boardToMoves = new std::unordered_map<Board*, std::vector<Move*>*>(100000);
+    //Weights for Disk Stability
+    weights = new std::vector<std::vector<int>>();
+	std::vector<int> temp;
+	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
+	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
+	(*this->weights).push_back(temp);
+
+	temp.clear();
+	temp.push_back(-3); temp.push_back(-4); temp.push_back(-1); temp.push_back(-1);
+	temp.push_back(-1); temp.push_back(-1); temp.push_back(-4); temp.push_back(-3);
+	(*this->weights).push_back(temp);
+	
+	temp.clear();
+	temp.push_back(2); temp.push_back(-1); temp.push_back(1); temp.push_back(0);
+	temp.push_back(0); temp.push_back(1); temp.push_back(-1); temp.push_back(2);
+	(*this->weights).push_back(temp);
+
+	temp.clear();
+	temp.push_back(2); temp.push_back(-1); temp.push_back(0); temp.push_back(1);
+	temp.push_back(1); temp.push_back(0); temp.push_back(-1); temp.push_back(2);
+	(*this->weights).push_back(temp);
+
+	temp.clear();
+	temp.push_back(2); temp.push_back(-1); temp.push_back(0); temp.push_back(1);
+	temp.push_back(1); temp.push_back(0); temp.push_back(-1); temp.push_back(2);
+	(*this->weights).push_back(temp);
+
+	temp.clear();
+	temp.push_back(2); temp.push_back(-1); temp.push_back(1); temp.push_back(0);
+	temp.push_back(0); temp.push_back(1); temp.push_back(-1); temp.push_back(2);
+	(*this->weights).push_back(temp);
+
+	temp.clear();
+	temp.push_back(-3); temp.push_back(-4); temp.push_back(-1); temp.push_back(-1);
+	temp.push_back(-1); temp.push_back(-1); temp.push_back(-4); temp.push_back(-3);
+	(*this->weights).push_back(temp);
+
+	temp.clear();
+	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
+	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
+	(*this->weights).push_back(temp);
 }
 
 /*
@@ -119,7 +159,6 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
   int MAX_DEPTH = 20;
   if(!this->timing) MAX_DEPTH = 4;
   if(moves->size() < 1) return nullptr;
-  //this->boardToMoves = new std::unordered_map<Board*, std::vector<Move*>*>();
   //preset heuristic for keeping track of max
   double bestheur;
   if(this->color == BLACK)
@@ -185,10 +224,8 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
     }
   std::cerr << "depth: " << search_depth-1 << std::endl;
   std::cerr << "Nodes: " << nodes << std::endl;
-  //std::cerr << "Hash Table Entrieds: " << boardToMoves->size() << std::endl;
   std::cerr << "Evaluation: " << bestheur << std::endl;
   std::cerr << "Best move: " << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
-  //delete boardToMoves;
   nodes = 0;
   return winner;
 }
@@ -207,55 +244,12 @@ double Player::heuristic(Board* board)
  *of Washington determined to be best
  *@param Board* board -- a pointer to the board representation we wish to evaluate
  **/
-double uWashingtonHeuristic(Board* board)  {
+double Player::uWashingtonHeuristic(Board* board)  {
 	int whitetiles = 0, blacktiles = 0, whitefrontier = 0, blackfrontier = 0;
 
 	int X[] = {-1, -1, 0, 1, 1, 1, 0, -1};
 	int Y[] = {0, 1, 1, 1, 0, -1, -1, -1};
 	
-	//Weights for Disk Stability
-	std::vector<std::vector<int>> weights;
-	std::vector<int> temp;
-	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
-	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
-	weights.push_back(temp);
-
-	temp.clear();
-	temp.push_back(-3); temp.push_back(-4); temp.push_back(-1); temp.push_back(-1);
-	temp.push_back(-1); temp.push_back(-1); temp.push_back(-4); temp.push_back(-3);
-	weights.push_back(temp);
-	
-	temp.clear();
-	temp.push_back(2); temp.push_back(-1); temp.push_back(1); temp.push_back(0);
-	temp.push_back(0); temp.push_back(1); temp.push_back(-1); temp.push_back(2);
-	weights.push_back(temp);
-
-	temp.clear();
-	temp.push_back(2); temp.push_back(-1); temp.push_back(0); temp.push_back(1);
-	temp.push_back(1); temp.push_back(0); temp.push_back(-1); temp.push_back(2);
-	weights.push_back(temp);
-
-	temp.clear();
-	temp.push_back(2); temp.push_back(-1); temp.push_back(0); temp.push_back(1);
-	temp.push_back(1); temp.push_back(0); temp.push_back(-1); temp.push_back(2);
-	weights.push_back(temp);
-
-	temp.clear();
-	temp.push_back(2); temp.push_back(-1); temp.push_back(1); temp.push_back(0);
-	temp.push_back(0); temp.push_back(1); temp.push_back(-1); temp.push_back(2);
-	weights.push_back(temp);
-
-	temp.clear();
-	temp.push_back(-3); temp.push_back(-4); temp.push_back(-1); temp.push_back(-1);
-	temp.push_back(-1); temp.push_back(-1); temp.push_back(-4); temp.push_back(-3);
-	weights.push_back(temp);
-
-	temp.clear();
-	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
-	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
-	weights.push_back(temp);
-
-
 	// Mobility
 	double mobscore;
 	whitetiles = board->numValidMoves(WHITE);
@@ -273,12 +267,12 @@ double uWashingtonHeuristic(Board* board)  {
 	    {
 	      if(board->get(WHITE, i, j))  
 		{
-		  diskstabilityscore += weights[i][j];
+		  diskstabilityscore += (*this->weights)[i][j];
 		  whitetiles++;
 		} 
 	      else if(board->get(BLACK, i, j))  
 		{
-		  diskstabilityscore -= weights[i][j];
+		  diskstabilityscore -= (*this->weights)[i][j];
 		  blacktiles++;
 		}
 	      if(board->occupied(i, j))  
@@ -372,80 +366,6 @@ double uWashingtonHeuristic(Board* board)  {
 }
 
 /**
- *@brief Minixmax algorithm for searching moves
- *@param Board* board -- the board to minimax on
- *@param Side s -- the current side of the player
- *@param int depth -- how deep to search
- **/
-double Player::minimax(Board* board, Side s, int depth)
-{
-  nodes++;
-  //board->printBoard();
-  Side opp;
-  if (s == BLACK){
-    opp = WHITE;
-  }
-  else{
-    opp = BLACK;
-  }
-  double val;
-  if (s == BLACK){
-    val = -infinity;
-  }
-  else{
-    val = infinity;
-  }
-  std::vector<Move*> *moves = board->getMoves(board, s);
-  for (unsigned int i = 0; i < moves->size(); i++) 
-    {
-      //break if out of time.
-      if(!this->timer.canContinue()) break;
-
-      Move *m = (*moves)[i];
-      Board* temp = board->copy();
-      double score = 0;
-      temp->doMove(m, s);
-      if (temp->isDone()) {
-	if (temp->countWhite() > temp->countBlack()) {
-	  score = -infinity;
-	}
-	else if (temp->countWhite() < temp->countBlack()) {
-	  score = infinity;
-	}
-	else {
-	  score = 0;
-	}
-	
-      }
-      else if (depth == 0) {
-	score = uWashingtonHeuristic(temp);
-      }
-      else 
-	{
-	  if (temp->numValidMoves(opp) == 0) 
-	    {
-	      score = minimax(temp, s, depth-1);
-	    }
-	  else
-	    {
-	      score = minimax(temp, opp, depth-1);
-	    }
-	}
-      
-      if (s == BLACK && score > val){
-	val = score;
-      }
-      else if (s == WHITE && score < val){
-	val = score;
-      }
-      //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
-      delete temp;
-    }
-  cleanMoves(moves);
-  return val;
-}
-
-/**
  *@brief Minimax with alphabeta pruning
  *@param Board* board -- the board to find the next best move
  *@param Side s -- the color of the current player
@@ -472,18 +392,9 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
   else{
     val = infinity;
   }
-  std::vector<Move*> *moves;
-  //std::unordered_map<Board*, std::vector<Move*>*>::const_iterator m = boardToMoves->find(board);
-  //if (m == boardToMoves->end()) {
-    moves = board->getMoves(board, s);
-    //}
-    //else{
-    //moves = m->second;
-    //}
-  double* scores = (double*) malloc(sizeof(double) * moves->size());
-  for (unsigned int i = 0; i < moves->size(); i++) {
-    scores[i] = val;
-  }
+  
+  std::vector<Move*> *moves = board->getMoves(board, s);
+
   for (unsigned int i = 0; i < moves->size(); i++) 
     {
       //Break if out of time.
@@ -503,7 +414,6 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
 	else {
 	  score = 0;
 	}
-	
       }
       else if (depth == 0)
 	{
@@ -520,7 +430,6 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
 	      score = alphabeta(temp, opp, depth-1, alpha, beta);
 	    }
 	}
-      scores[i] = score;
       if (s == BLACK && score > val)
 	{
 	  val = score;
@@ -545,34 +454,8 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
       delete temp;
     }
-  //sortTogether(scores, moves, s);
-  //(*this->boardToMoves)[board] = moves;
   cleanMoves(moves);
-  free(scores);
   return val;
-}
-
-void sortTogether(double scores[], std::vector<Move*> *moves, Side s) {
-  for (unsigned int j = 0; j < moves->size() -1; j++) {
-    unsigned int ival = j;
-    for (unsigned int i = j+1; i < moves->size(); i++) {
-      if (s == BLACK && scores[i] > scores[ival]) {
-	ival = i;
-      }
-      if (s == WHITE && scores[i] < scores[ival]) {
-	ival = i;
-      }
-    }
-
-    if (ival != j) {
-      double temp = scores[j];
-      scores[j] = scores[ival];
-      scores[ival] = temp;
-      Move *tmove = (*moves)[j];
-      (*moves)[j] = (*moves)[ival];
-      (*moves)[ival] = tmove;
-    }
-  }
 }
     
     

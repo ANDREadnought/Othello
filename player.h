@@ -18,11 +18,14 @@ class Player {
 protected:
   Table *openings, *trans;
   Board* board;
+  
+  std::vector<std::vector<int>> *weights;
   std::unordered_map<Board*, std::vector<Move*>*> *boardToMoves;
   std::vector<Move*>* getMoves();
   Move* chooseMove(std::vector<Move*>* moves);
   double minimax(Board* board, Side s, int depth);
   double alphabeta(Board* board, Side s, int depth, double alpha, double beta);
+  double uWashingtonHeuristic(Board* board);
   Side color, oppcolor;
   double heuristic(Board* board);
   Timer timer;
@@ -38,8 +41,5 @@ public:
 };
 
 std::vector<Move*>* getMoves(Board* board, Side color);
-double uWashingtonHeuristic(Board* board);
-double minimax(Board* board, Side s, int depth);
-double alphabeta(Board* board, Side s, int depth, double alpha, double beta);
 void sortTogether(double score[], std::vector<Move*>* moves, Side s); 
 #endif
