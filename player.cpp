@@ -106,6 +106,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   return todo;
 }
 
+int nodes = 0;
 /**
  *@brief Chooses the the next move -- is given the list of next moves
  * -- Searches with Minimax
@@ -114,7 +115,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   int MAX_DEPTH = 20;
-  if(!this->timing) MAX_DEPTH = 3;
+  if(!this->timing) MAX_DEPTH = 4;
   if(moves->size() < 1) return nullptr;
 
   //preset heuristic for keeping track of max
@@ -137,11 +138,34 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 	  double heur;
 	  Board* testboard = this->board->copy();
 	  testboard->doMove((*moves)[i], this->color);
-	  if (this->color == WHITE)
-	    heur = alphabeta(testboard, BLACK, search_depth, -infinity, infinity);
-	  else
-	    heur = alphabeta(testboard, WHITE, search_depth, -infinity, infinity);
-	  if(this->color == BLACK and heur > bestheur)
+	  if (testboard->isDone()) {
+	    if (testboard->countWhite() > testboard->countBlack()) {
+	      heur = -infinity;
+	    }
+	    else if (testboard->countBlack() > testboard->countWhite()) {
+	      heur = infinity;
+	    }
+	    else{
+	      heur = 0;
+	    }
+	  }
+	  else if (this->color == WHITE) {
+	    if (testboard->numValidMoves(BLACK) > 0) {
+	      heur = alphabeta(testboard, BLACK, search_depth, -infinity, infinity);
+	    }
+	    else {
+	      heur = alphabeta(testboard, WHITE, search_depth, -infinity, infinity);
+	    }
+	  }
+	  else {
+	    if (testboard->numValidMoves(WHITE) > 0) {
+	      heur = alphabeta(testboard, WHITE, search_depth, -infinity, infinity);
+	    }
+	    else{ 
+	      heur = alphabeta(testboard, BLACK, search_depth, -infinity, infinity);
+	    }
+	  }
+ 	  if(this->color == BLACK and heur > bestheur)
 	    {
 	      bestheur = heur;
 	      newWinner = (*moves)[i];
@@ -158,6 +182,8 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
       search_depth++; 
     }
   std::cerr << "depth: " << search_depth-1 << std::endl;
+  std::cerr << "Nodes: " << nodes << std::endl;
+  nodes = 0;
   std::cerr << "Evaluation: " << bestheur << std::endl;
   std::cerr << "Best move: " << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
   return winner;
@@ -425,6 +451,7 @@ double Player::minimax(Board* board, Side s, int depth)
  **/
 double Player::alphabeta(Board* board, Side s, int depth, double alpha, double beta)
 {
+  nodes++;
   //board->printBoard();
   Side opp;
   if (s == BLACK){
