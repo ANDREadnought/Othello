@@ -41,6 +41,7 @@ Player::Player(Side side) {
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
+    //this->boardToMoves = new std::unordered_map<Board*, std::vector<Move*>*>(100000);
 }
 
 /*
@@ -115,9 +116,9 @@ int nodes = 0;
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   int MAX_DEPTH = 20;
-  if(!this->timing) MAX_DEPTH = 4;
+  if(!this->timing) MAX_DEPTH = 8;
   if(moves->size() < 1) return nullptr;
-
+  //this->boardToMoves = new std::unordered_map<Board*, std::vector<Move*>*>();
   //preset heuristic for keeping track of max
   double bestheur;
   if(this->color == BLACK)
@@ -183,9 +184,11 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
     }
   std::cerr << "depth: " << search_depth-1 << std::endl;
   std::cerr << "Nodes: " << nodes << std::endl;
-  nodes = 0;
+  std::cerr << "Hash Table Entrieds: " << boardToMoves->size() << std::endl;
   std::cerr << "Evaluation: " << bestheur << std::endl;
   std::cerr << "Best move: " << " (" << winner->getX() << "," << winner->getY() << ")" << std::endl;
+  //delete boardToMoves;
+  nodes = 0;
   return winner;
 }
 
@@ -467,8 +470,18 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
   else{
     val = infinity;
   }
-  
-  std::vector<Move*> *moves = board->getMoves(board, s);
+  std::vector<Move*> *moves;
+  //std::unordered_map<Board*, std::vector<Move*>*>::const_iterator m = boardToMoves->find(board);
+  //if (m == boardToMoves->end()) {
+    moves = board->getMoves(board, s);
+    //}
+    //else{
+    //moves = m->second;
+    //}
+  double* scores = (double*) malloc(sizeof(double) * moves->size());
+  for (unsigned int i = 0; i < moves->size(); i++) {
+    scores[i] = val;
+  }
   for (unsigned int i = 0; i < moves->size(); i++) 
     {
       //Break if out of time.
@@ -505,7 +518,7 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
 	      score = alphabeta(temp, opp, depth-1, alpha, beta);
 	    }
 	}
-      
+      scores[i] = score;
       if (s == BLACK && score > val)
 	{
 	  val = score;
@@ -529,6 +542,34 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
       delete temp;
     }
+  //sortTogether(scores, moves, s);
+  //(*this->boardToMoves)[board] = moves;
   cleanMoves(moves);
+  free(scores);
   return val;
 }
+
+void sortTogether(double scores[], std::vector<Move*> *moves, Side s) {
+  for (unsigned int j = 0; j < moves->size() -1; j++) {
+    unsigned int ival = j;
+    for (unsigned int i = j+1; i < moves->size(); i++) {
+      if (s == BLACK && scores[i] > scores[ival]) {
+	ival = i;
+      }
+      if (s == WHITE && scores[i] < scores[ival]) {
+	ival = i;
+      }
+    }
+
+    if (ival != j) {
+      double temp = scores[j];
+      scores[j] = scores[ival];
+      scores[ival] = temp;
+      Move *tmove = (*moves)[j];
+      (*moves)[j] = (*moves)[ival];
+      (*moves)[ival] = tmove;
+    }
+  }
+}
+    
+    

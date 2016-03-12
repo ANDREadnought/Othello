@@ -8,6 +8,7 @@
 #include <vector>
 #include "table.h"
 #include "timer.h"
+#include <unordered_map>
 
 const double infinity = 987654321.32658;
 const std::string openingfile = "openingbook.txt";
@@ -17,6 +18,7 @@ class Player {
 protected:
   Table *openings, *trans;
   Board* board;
+  std::unordered_map<Board*, std::vector<Move*>*> *boardToMoves;
   std::vector<Move*>* getMoves();
   Move* chooseMove(std::vector<Move*>* moves);
   double minimax(Board* board, Side s, int depth);
@@ -36,6 +38,8 @@ public:
 };
 
 std::vector<Move*>* getMoves(Board* board, Side color);
-double uWashingtonHeuristic(Board* board, Side my_color, Side opp_color);
+double uWashingtonHeuristic(Board* board);
 double minimax(Board* board, Side s, int depth);
+double alphabeta(Board* board, Side s, int depth, double alpha, double beta);
+void sortTogether(double score[], std::vector<Move*>* moves, Side s); 
 #endif
