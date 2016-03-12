@@ -114,7 +114,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   int MAX_DEPTH = 20;
-  if(!this->timing) MAX_DEPTH = 4;
+  if(!this->timing) MAX_DEPTH = 3;
   if(moves->size() < 1) return nullptr;
 
   //preset heuristic for keeping track of max
@@ -374,7 +374,19 @@ double Player::minimax(Board* board, Side s, int depth)
       Board* temp = board->copy();
       double score = 0;
       temp->doMove(m, s);
-      if (depth == 0) {
+      if (temp->isDone()) {
+	if (temp->countWhite() > temp->countBlack()) {
+	  score = -infinity;
+	}
+	else if (temp->countWhite() < temp->countBlack()) {
+	  score = infinity;
+	}
+	else {
+	  score = 0;
+	}
+	
+      }
+      else if (depth == 0) {
 	score = uWashingtonHeuristic(temp);
       }
       else 
@@ -439,7 +451,19 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       Board * temp = board->copy();
       double score = 0;
       temp->doMove(m, s);
-      if (depth == 0)
+      if (temp->isDone()) {
+	if (temp->countWhite() > temp->countBlack()) {
+	  score = -infinity;
+	}
+	else if (temp->countWhite() < temp->countBlack()) {
+	  score = infinity;
+	}
+	else {
+	  score = 0;
+	}
+	
+      }
+      else if (depth == 0)
 	{
 	  score = uWashingtonHeuristic(temp);
 	}
