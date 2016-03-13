@@ -1,5 +1,14 @@
+
 #include "table.h"
 
+/**
+ *@brief Constructs a table entry
+ *@param Board* board -- a pointer to the board representation
+ * to be converted to a string and used as the key in the hash table
+ *@param Move* best -- a pointer to the best move
+ *@param double score -- the score that that board evaluated to
+ *@param int pop -- a popularity score for the board
+ **/
 Entry::Entry(Board* board, Move* best, double score, int depth, int pop)
 {
   this->board = board->toString();
@@ -9,6 +18,14 @@ Entry::Entry(Board* board, Move* best, double score, int depth, int pop)
   this->pop = pop;
 }
 
+/**
+ *@brief Constructs a table entry
+ *@param Board* board -- a pointer to the board representation
+ * to be converted to a string and used as the key in the hash table
+ *@param std::string best -- a string representing the best move
+ *@param double score -- the score that that board evaluated to
+ *@param int pop -- a popularity score for the board
+ **/
 Entry::Entry(Board* board, std::string best, double score, int depth, int pop)
 {
   int movei = atoi(best.c_str());
@@ -18,6 +35,15 @@ Entry::Entry(Board* board, std::string best, double score, int depth, int pop)
   this->depth = depth;
   this->pop = pop;
 }
+
+/**
+ *@brief Constructs a table entry
+ *@param std::string board -- the string representation of the board,
+ * to be used as a key
+ *@param Move* best -- a pointer to the best move
+ *@param double score -- the score that that board evaluated to
+ *@param int pop -- a popularity score for the board
+ **/
 Entry::Entry(std::string board, Move* best, double score, int depth, int pop)
 {
   this->board = board;
@@ -27,6 +53,16 @@ Entry::Entry(std::string board, Move* best, double score, int depth, int pop)
   this->pop = pop;
 
 }
+
+
+/**
+ *@brief Constructs a table entry
+ *@param std::string board -- the string representation of the board,
+ * to be used as a key
+ *@param std::string best -- a string representation of the best move
+ *@param double score -- the score that that board evaluated to
+ *@param int pop -- a popularity score for the board
+ **/
 Entry::Entry(std::string board, std::string best, double score, int depth, int pop)
 {
   int movei = atoi(best.c_str());
@@ -36,11 +72,18 @@ Entry::Entry(std::string board, std::string best, double score, int depth, int p
   this->depth = depth;
   this->pop = pop;
 }
+
+/**
+ *@brief Standard entry destructor
+ **/
 Entry::~Entry()
 {
   delete move;
 }
 
+/**
+ *@brief returns a pointer to a copy of the move we have stored as the best for this move
+ **/
 Move* Entry::getMove()
 {
   Move* ret = new Move(this->move->getX(), this->move->getY());
@@ -48,7 +91,12 @@ Move* Entry::getMove()
 }
 
 
-
+/**
+ *@brief Standard table constructor
+ *@param std::string filename -- the name of the file to be 
+ * read from and written to 
+ *@param int max_mem -- the maximum memory this table is allowed to use
+ **/
 Table::Table(std::string filename, int max_mem)
 {
   this->filename = filename;
@@ -59,6 +107,10 @@ Table::Table(std::string filename, int max_mem)
   this->_max_memory = max_mem;
 }
 
+
+/**
+ *@brief Standard destructor
+ **/
 Table::~Table()
 {
   for(auto i = this->table->begin(); i != this->table->end(); ++i)
@@ -68,6 +120,9 @@ Table::~Table()
   delete this->table;
 }
 
+/**
+ *@brief loads the table from the file specified in constructor
+ **/
 void Table::load()
 {
   char board[100]; std::string boards; 
@@ -105,6 +160,10 @@ void Table::load()
   this->_bucket_count = this->table->bucket_count();
 }
 
+/**
+ *@brief Resaves the table in the file specified in constructor 
+ * -- complete overwrite
+ **/
 void Table::save()
 {
   std::string boards, scores;
@@ -137,16 +196,30 @@ void Table::save()
     }
 }
 
+/**
+ *@brief Returns the number of buckets the table has
+ **/
 int Table::bucket_count()
 {
   return this->_bucket_count;
 }
 
+/**
+ *@brief Returns the number of entries in the Table
+ **/
 int Table::size()
 {
   return this->_size;
 }
 
+/**
+ *@brief Adds a new Entry to the Table
+ *@param Board* board -- a pointer to the board representation
+ * to be converted to a string and used as the key in the hash table
+ *@param Move* best -- a pointer to the best move
+ *@param double score -- the score that that board evaluated to
+ *@param int depth -- the depth this position was searched to
+ **/
 void Table::add(Board* board, Move* best, double score, int depth)
 {
   if(this->_memory < this->_max_memory)
@@ -160,6 +233,15 @@ void Table::add(Board* board, Move* best, double score, int depth)
     }
 }
 
+
+/**
+ *@brief Updates a previous Entry
+  *@param Board* board -- a pointer to the board representation
+ * to be converted to a string and used as the key in the hash table
+ *@param Move* best -- a pointer to the best move
+ *@param double score -- the score that that board evaluated to
+ *@param int depth -- the depth this position was searched to
+ **/
 void Table::update(Board* board, Move* best, double score, int depth, int pop)
 {
   Entry* entry = this->contains(board);
@@ -171,6 +253,11 @@ void Table::update(Board* board, Move* best, double score, int depth, int pop)
   entry->pop = pop;
 }
 
+/**
+ *@brief Checks to see if the Board is in the Table.
+ *@param Board* board -- a pointer to the Board in the table
+ *@return nullptr board is not a member, an Entry* if it is.
+ **/
 Entry* Table::contains(Board* board)
 {
   std::string key = board->toString();
