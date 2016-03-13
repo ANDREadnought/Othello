@@ -1,20 +1,21 @@
 CC          = g++
 CFLAGS      = -Wall -ansi -pedantic -ggdb --std=c++11
 OBJS        = player.o board.o table.o timer.o common.o
+OBJECTS = $(addprefix obj/,$(OBJS))
 PLAYERNAME  = ANDREadnought
 
 all: $(PLAYERNAME) testgame
 
-$(PLAYERNAME): $(OBJS) wrapper.o
+$(PLAYERNAME): $(OBJECTS) obj/wrapper.o
 	$(CC) -o $@ $^
 
-testgame: testgame.o
+testgame: obj/testgame.o
 	$(CC) -o $@ $^
 
-testminimax: $(OBJS) testminimax.o
+testminimax: $(OBJECTS) obj/testminimax.o
 	$(CC) -o $@ $^
 
-%.o: %.cpp
+obj/%.o: src/%.cpp
 	$(CC) -c $(CFLAGS) -x c++ $< -o $@
 	
 java:
@@ -24,6 +25,6 @@ cleanjava:
 	make -C java/ clean
 
 clean:
-	rm -f *.o $(PLAYERNAME) testgame testminimax
+	rm -f obj/*.o $(PLAYERNAME) testgame testminimax
 	
 .PHONY: java testminimax

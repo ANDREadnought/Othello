@@ -1,4 +1,6 @@
 #include "common.h"
+#include <mutex>
+#include <thread>
 
 void cleanMoves(std::vector<Move*>* moves)
 {
