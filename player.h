@@ -31,6 +31,8 @@ protected:
   double minimax(Board* board, Side s, int depth);
   double alphabeta(Board* board, Side s, int depth, double alpha, double beta);
   double uWashingtonHeuristic(Board* board);
+  double MTDF(Board* board, Side s, double f, int depth);
+  double negascout(Board* board, Side s, int depth, double alpha, double beta);
   Side color, oppcolor;
   double heuristic(Board* board);
   void saveTables();

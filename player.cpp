@@ -105,45 +105,7 @@ Player::Player(Side side) {
  */
 Player::~Player() {
   delete board;
-
-  system("./extract.sh");
-  if(this->trans)
-    {
-      try
-	{
-	  this->trans->save();
-	}
-      catch(FileNotOpenError())
-	{
-	  std::cerr << "Transposition Table not saved" << std::endl;
-	}
-      delete trans;
-    }
-  if(this->openings)
-    {
-      try
-	{
-	  this->openings->save();
-	}
-      catch(FileNotOpenError())
-	{
-	  std::cerr << "Transposition Table not saved" << std::endl;
-	}
-      delete openings;
-    }
-  if(this->closings)
-    {
-      try
-  	{
-  	  this->openings->save();
-  	}
-      catch(FileNotOpenError())
-  	{
-  	  std::cerr << "Transposition Table not saved" << std::endl;
-  	}
-      delete openings;
-    }
-  system("./compress.sh");
+  saveTables();
 }
 
 void Player::saveTables()
@@ -242,7 +204,7 @@ int nodes = 0;
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   int MAX_DEPTH = 20;
-  if(!this->timing) MAX_DEPTH = 7;
+  if(!this->timing) MAX_DEPTH = 6;
   if(moves->size() < 1) return nullptr;
   //preset heuristic for keeping track of max
   double bestheur = -infinity;
@@ -266,11 +228,24 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 	  double heur;
 	  Board* testboard = this->board->copy();
 	  testboard->doMove((*moves)[i], this->color);
+	  //double guess;
+	  //Entry* testEntry = nullptr;
+	  //testEntry = this->trans->contains(board);
+	  //if (entry) {
+	  //guess = testEntry->getScore();
+	  //}
+	  //else{
+	  //guess = (this->color == BLACK)? uWashingtonHeuristic(testboard) : -uWashingtonHeuristic(testboard);
+	    //}
 	  if (testboard->numValidMoves(this->oppcolor) > 0) {
-	    heur = -alphabeta(testboard, this->oppcolor, search_depth-1, -infinity, infinity);
+	    heur = -negascout(testboard, this->oppcolor, search_depth-1, -infinity, infinity);
+	    //heur2 = -alphabeta(testboard, this->oppcolor, search_depth-1, -infinity, infinity);
+	    //heur = -MTDF(testboard, this->oppcolor, guess, search_depth-1);
 	  }
 	  else {
-	    heur = alphabeta(testboard, this->color, search_depth-1, -infinity, infinity);
+	    heur = negascout(testboard, this->color, search_depth-1, -infinity, infinity);
+	    //heur2 = alphabeta(testboard, this->color, search_depth-1, -infinity, infinity);
+	    //heur = MTDF(testboard, this->color, guess, search_depth-1);
 	  }
 	  if (heur > bestheur) {
 	    bestheur = heur;
@@ -439,15 +414,8 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
   nodes++;
   Side opp = (s == WHITE)? BLACK : WHITE;
   if (board->isDone()) {
-    if (board->count(s) > board->count(opp)) {
-      return infinity;
-    }
-    else if (board->count(s) < board->count(opp)) {
-      return -infinity;
-    }
-    else {
-      return 0;
-    }
+    double value =  heuristic(board) * 1000000;
+    return (s == BLACK)? value : -value;
   }
   if (depth == 0) {
     double score =  (s == BLACK)? uWashingtonHeuristic(board) : -uWashingtonHeuristic(board);
@@ -497,4 +465,82 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
   return max;
 }
     
-    
+double Player::MTDF(Board *b, Side s, double f, int depth) {
+  double g = f;
+  double upper = infinity;
+  double lower = -infinity;
+  while (lower < upper-1) {
+    //std::cerr << "g: " << g << " lower: " << lower << " upper: " << upper << std::endl;
+    double beta = (g > lower+1)? g : lower+1;
+    g = alphabeta(b, s, depth, beta-1, beta);
+    if (g < beta) {
+      upper = g;
+    }
+    else {
+      lower = g;
+    }
+  }
+  return g;
+}
+
+double Player::negascout(Board *board, Side s, int depth, double alpha, double beta) {
+  nodes++;
+  Side opp = (s == WHITE)? BLACK : WHITE;
+  if (board->isDone()) {
+    double value =  heuristic(board) * 1000000;
+    return (s == BLACK)? value : -value;
+  }
+  if (depth == 0) {
+    double score =  (s == BLACK)? uWashingtonHeuristic(board) : -uWashingtonHeuristic(board);
+    return score;
+  }
+  double max = -infinity;
+  
+  Move* winner = nullptr;
+  std::vector<Move*> *moves = board->getMoves(board, s);
+  Entry* entry = this->trans->contains(board);
+  if(entry)
+  {
+    Move* move = entry->getMove();
+    moves->insert(moves->begin(), move);
+  }
+  for (unsigned int i = 0; i < moves->size(); i++) 
+    {
+      //Break if out of time.
+      if(!this->timer.canContinue()) break;
+
+      Move *m = (*moves)[i];
+      Board * temp = board->copy();
+      double score = 0;
+      temp->doMove(m, s);
+      if (entry && i != 1) {
+	score = (temp->numValidMoves(opp) == 0)?
+	  negascout(temp, s, depth-1, alpha, alpha+1) :
+	  -negascout(temp, opp, depth-1, -alpha-1, -alpha);
+	if (alpha < score) {
+	  score = (temp->numValidMoves(opp) == 0)?
+	    negascout(temp, s, depth-1, alpha, beta) :
+	    -negascout(temp, opp, depth-1, -beta, -alpha);
+	}
+      }
+      else{
+	score = (temp->numValidMoves(opp) == 0)?
+	  negascout(temp, s, depth-1, alpha, beta) :
+	  -negascout(temp, opp, depth-1, -beta, -alpha);
+      }
+      if (score > max) {
+	max = score;
+	winner = m;
+	if (score > alpha) alpha = score;
+      }
+      if (alpha > beta)	{
+	delete temp;
+	break;
+      }
+      delete temp;
+    }
+  if(!entry and winner) this->trans->add(board, winner, max, depth);
+  else if(entry && winner && entry->depth < depth) this->trans->update(board, winner, max, depth, entry->depth);
+  cleanMoves(moves);
+  return max;
+}

@@ -27,6 +27,7 @@ class Entry
   int pop;
 
   Move* getMove();
+  double getScore();
 };
 
 class Table

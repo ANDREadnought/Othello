@@ -47,6 +47,9 @@ Move* Entry::getMove()
   return ret;
 }
 
+double Entry::getScore() {
+  return score;
+}
 
 
 Table::Table(std::string filename, int max_mem)
