@@ -1,7 +1,11 @@
-Minimax w/ alpha-beta pruning
+Minimax w/ alpha-beta pruning -- DONE
 Move Order
 Transposition Table
 Opening Book
-MTD(f)
+MTD(f) -- currently very slow
+-- consider multi-prob cut as alternative
 Tweak heuristic
+Parallelization
+Bitboard
+Documentation
 
