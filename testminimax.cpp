@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
       else{
 	if (board->numValidMoves(BLACK) > 0) {
 	  turn = BLACK;
+	  break;
 	}
       }
       delete last;

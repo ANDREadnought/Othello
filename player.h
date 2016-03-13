@@ -14,9 +14,9 @@ const double infinity = 987654321.32658;
 const std::string openingfile = "tables/openingbook.txt";
 const std::string transfile = "tables/transtable.txt";
 const std::string closingfile = "tables/closingbook.txt";
-const int transmem = 300000000;
-const int closingmem = 100000000;
-const int openingmem = 100000000;
+const int transmem =   40000000;
+const int closingmem = 10000000;
+const int openingmem = 10000000;
 
 
 class Player {

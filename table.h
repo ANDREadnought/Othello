@@ -40,6 +40,7 @@ class Table
   void save();
   int size();
   int bucket_count();
+  int memory();
   void add(Board* board, Move* best, double score, int depth);
   void update(Board* board, Move* best, double score, int depth, int pop);
   Entry* contains(Board* board);

@@ -224,6 +224,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   std::cerr << "Opening Table Buckets: " << this->openings->bucket_count() << std::endl;
   std::cerr << "Transposition Table Entries: " << this->trans->size() << std::endl;
   std::cerr << "Transposition Table Buckets: " << this->trans->bucket_count() << std::endl;
+  std::cerr << "Transposition Table Memory: "  << this->trans->memory() << std::endl;
   std::cerr << "Closing Table Entries: " << this->closings->size() << std::endl;
   std::cerr << "Closing Table Buckets: " << this->closings->bucket_count() << std::endl;
   std::cerr << "--------------------------" << std::endl << std::endl;
@@ -241,22 +242,16 @@ int nodes = 0;
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   int MAX_DEPTH = 20;
-  if(!this->timing) MAX_DEPTH = 3;
+  if(!this->timing) MAX_DEPTH = 7;
   if(moves->size() < 1) return nullptr;
   //preset heuristic for keeping track of max
-  double bestheur;
-  if(this->color == BLACK)
-    {
-      bestheur = -infinity;
-    }
-  else bestheur = infinity;
+  double bestheur = -infinity;
 
   Entry* entry = nullptr;
   Move* winner = (*moves)[0];
   int search_depth = 1; 
   while(search_depth <= MAX_DEPTH)
     { 
-      
       entry = this->trans->contains(board);
       if(entry) 
 	{
@@ -271,43 +266,16 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 	  double heur;
 	  Board* testboard = this->board->copy();
 	  testboard->doMove((*moves)[i], this->color);
-	  if (testboard->isDone()) {
-	    if (testboard->countWhite() > testboard->countBlack()) {
-	      heur = -infinity;
-	    }
-	    else if (testboard->countBlack() > testboard->countWhite()) {
-	      heur = infinity;
-	    }
-	    else{
-	      heur = 0;
-	    }
-	  }
-	  else if (this->color == WHITE) {
-	    if (testboard->numValidMoves(BLACK) > 0) {
-	      heur = alphabeta(testboard, BLACK, search_depth, -infinity, infinity);
-	    }
-	    else {
-	      heur = alphabeta(testboard, WHITE, search_depth, -infinity, infinity);
-	    }
+	  if (testboard->numValidMoves(this->oppcolor) > 0) {
+	    heur = -alphabeta(testboard, this->oppcolor, search_depth-1, -infinity, infinity);
 	  }
 	  else {
-	    if (testboard->numValidMoves(WHITE) > 0) {
-	      heur = alphabeta(testboard, WHITE, search_depth, -infinity, infinity);
-	    }
-	    else{ 
-	      heur = alphabeta(testboard, BLACK, search_depth, -infinity, infinity);
-	    }
+	    heur = alphabeta(testboard, this->color, search_depth-1, -infinity, infinity);
 	  }
- 	  if(this->color == BLACK and heur > bestheur)
-	    {
-	      bestheur = heur;
-	      newWinner = (*moves)[i];
-	    }
-	  else if(this->color == WHITE and heur < bestheur) 
-	    {
-	      bestheur = heur;
-	      newWinner = (*moves)[i];
-	    }
+	  if (heur > bestheur) {
+	    bestheur = heur;
+	    newWinner = (*moves)[i];
+	  }
 	  delete testboard;
 	}
       if(timer.canContinue() and newWinner) winner = newWinner;
@@ -469,30 +437,34 @@ double Player::uWashingtonHeuristic(Board* board)  {
 double Player::alphabeta(Board* board, Side s, int depth, double alpha, double beta)
 {
   nodes++;
-  //board->printBoard();
-  Side opp;
-  if (s == BLACK){
-    opp = WHITE;
+  Side opp = (s == WHITE)? BLACK : WHITE;
+  if (board->isDone()) {
+    if (board->count(s) > board->count(opp)) {
+      return infinity;
+    }
+    else if (board->count(s) < board->count(opp)) {
+      return -infinity;
+    }
+    else {
+      return 0;
+    }
   }
-  else{
-    opp = BLACK;
+  if (depth == 0) {
+    double score =  (s == BLACK)? uWashingtonHeuristic(board) : -uWashingtonHeuristic(board);
+    //std::cerr << "s: " << score << " Side: " << s << std::endl;
+    return score;
   }
-  double val;
-  if (s == BLACK){
-    val = -infinity;
-  }
-  else{
-    val = infinity;
-  }
+
+  double max = -infinity;
   
   Move* winner = nullptr;
   std::vector<Move*> *moves = board->getMoves(board, s);
   Entry* entry = this->trans->contains(board);
   if(entry)
-    {
-      Move* move = entry->getMove();
-      moves->insert(moves->begin(), move);
-    }
+  {
+    Move* move = entry->getMove();
+    moves->insert(moves->begin(), move);
+  }
   for (unsigned int i = 0; i < moves->size(); i++) 
     {
       //Break if out of time.
@@ -502,62 +474,27 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       Board * temp = board->copy();
       double score = 0;
       temp->doMove(m, s);
-      if (temp->isDone()) {
-	if (temp->countWhite() > temp->countBlack()) {
-	  score = -infinity;
-	}
-	else if (temp->countWhite() < temp->countBlack()) {
-	  score = infinity;
-	}
-	else {
-	  score = 0;
-	}
+      if (temp->numValidMoves(opp) == 0)   {
+	score = alphabeta(temp, s, depth-1, alpha, beta);
       }
-      else if (depth == 0)
-	{
-	  score = uWashingtonHeuristic(temp);
-	}
-      else
-	{
-	  if (temp->numValidMoves(opp) == 0)
-	    {
-	      score = alphabeta(temp, s, depth-1, alpha, beta);
-	    }
-	  else
-	    {
-	      score = alphabeta(temp, opp, depth-1, alpha, beta);
-	    }
-	}
-      if (s == BLACK && score > val)
-	{
-	  val = score;
-	  winner = m;
-	  if (score > alpha)
-	    {
-	      alpha = score;
-	    }
-	}
-      else if (s == WHITE && score < val)
-	{
-	  val = score;
-	  winner = m;
-	  if (score < beta)
-	    {
-	      beta = score;
-	    }
-	}
-      if (alpha > beta)
-	{
-	  delete temp;
-	  break;
-	}
-      //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
+      else  {
+	score = -alphabeta(temp, opp, depth-1, -beta, -alpha);
+      }
+      if (score > max) {
+	max = score;
+	winner = m;
+	if (score > alpha) alpha = score;
+      }
+      if (alpha > beta)	{
+	delete temp;
+	break;
+      }
       delete temp;
     }
-  if(!entry and winner) this->trans->add(board, winner, val, depth);
-  else if(entry && winner && entry->depth < depth) this->trans->update(board, winner, val, depth, entry->depth);
+  if(!entry and winner) this->trans->add(board, winner, max, depth);
+  else if(entry && winner && entry->depth < depth) this->trans->update(board, winner, max, depth, entry->depth);
   cleanMoves(moves);
-  return val;
+  return max;
 }
     
     
