@@ -227,6 +227,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   std::cerr << "Closing Table Entries: " << this->closings->size() << std::endl;
   std::cerr << "Closing Table Buckets: " << this->closings->bucket_count() << std::endl;
   std::cerr << "--------------------------" << std::endl << std::endl;
+  Entry* entry = this->trans->contains(this->board);
+  if(entry) this->trans->update(board, entry->move, entry->score, entry->depth, entry->pop + 1);
   if(this->_solved && !this->_saved && (this->timer.getRemaining() > 20000 || !this->timing)) this->saveTables();
   
   return todo;
@@ -555,7 +557,7 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       delete temp;
     }
   if(!entry and winner) this->trans->add(board, winner, val, depth);
-  else if(entry && winner && entry->depth < depth) this->trans->update(board, winner, val, depth, entry->depth);
+  else if(entry && winner && entry->depth < depth) this->trans->update(board, winner, val, depth, entry->pop);
   cleanMoves(moves);
   return val;
 }
