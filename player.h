@@ -9,6 +9,7 @@
 #include "table.h"
 #include "timer.h"
 #include <unordered_map>
+#include "heuristic.h"
 
 const double infinity = 987654321.32658;
 const std::string openingfile = "tables/openingbook.txt";
@@ -30,7 +31,6 @@ protected:
   Move* chooseMove(std::vector<Move*>* moves);
   double minimax(Board* board, Side s, int depth);
   double alphabeta(Board* board, Side s, int depth, double alpha, double beta);
-  double uWashingtonHeuristic(Board* board);
   double MTDF(Board* board, Side s, double f, int depth);
   double negascout(Board* board, Side s, int depth, double alpha, double beta);
   Side color, oppcolor;

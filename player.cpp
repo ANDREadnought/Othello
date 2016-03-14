@@ -57,47 +57,6 @@ Player::Player(Side side) {
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
-    //Weights for Disk Stability
-    weights = new std::vector<std::vector<int>>();
-	std::vector<int> temp;
-	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
-	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
-	(*this->weights).push_back(temp);
-
-	temp.clear();
-	temp.push_back(-3); temp.push_back(-4); temp.push_back(-1); temp.push_back(-1);
-	temp.push_back(-1); temp.push_back(-1); temp.push_back(-4); temp.push_back(-3);
-	(*this->weights).push_back(temp);
-	
-	temp.clear();
-	temp.push_back(2); temp.push_back(-1); temp.push_back(1); temp.push_back(0);
-	temp.push_back(0); temp.push_back(1); temp.push_back(-1); temp.push_back(2);
-	(*this->weights).push_back(temp);
-
-	temp.clear();
-	temp.push_back(2); temp.push_back(-1); temp.push_back(0); temp.push_back(1);
-	temp.push_back(1); temp.push_back(0); temp.push_back(-1); temp.push_back(2);
-	(*this->weights).push_back(temp);
-
-	temp.clear();
-	temp.push_back(2); temp.push_back(-1); temp.push_back(0); temp.push_back(1);
-	temp.push_back(1); temp.push_back(0); temp.push_back(-1); temp.push_back(2);
-	(*this->weights).push_back(temp);
-
-	temp.clear();
-	temp.push_back(2); temp.push_back(-1); temp.push_back(1); temp.push_back(0);
-	temp.push_back(0); temp.push_back(1); temp.push_back(-1); temp.push_back(2);
-	(*this->weights).push_back(temp);
-
-	temp.clear();
-	temp.push_back(-3); temp.push_back(-4); temp.push_back(-1); temp.push_back(-1);
-	temp.push_back(-1); temp.push_back(-1); temp.push_back(-4); temp.push_back(-3);
-	(*this->weights).push_back(temp);
-
-	temp.clear();
-	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
-	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
-	(*this->weights).push_back(temp);
 }
 
 /*
@@ -195,6 +154,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   return todo;
 }
 
+
 int nodes = 0;
 /**
  *@brief Chooses the the next move -- is given the list of next moves
@@ -204,7 +164,7 @@ int nodes = 0;
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
   int MAX_DEPTH = 20;
-  if(!this->timing) MAX_DEPTH = 6;
+  if(!this->timing) MAX_DEPTH = 4;
   if(moves->size() < 1) return nullptr;
   //preset heuristic for keeping track of max
   double bestheur = -infinity;
@@ -228,23 +188,21 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 	  double heur;
 	  Board* testboard = this->board->copy();
 	  testboard->doMove((*moves)[i], this->color);
-	  //double guess;
-	  //Entry* testEntry = nullptr;
-	  //testEntry = this->trans->contains(board);
-	  //if (entry) {
-	  //guess = testEntry->getScore();
-	  //}
-	  //else{
-	  //guess = (this->color == BLACK)? uWashingtonHeuristic(testboard) : -uWashingtonHeuristic(testboard);
-	    //}
+	  /*double guess;
+	  Entry* testEntry = nullptr;
+	  testEntry = this->trans->contains(board);
+	  if (entry) {
+	    guess = testEntry->getScore();
+	  }
+	  else{
+	  guess = (this->color == BLACK)? uWashingtonHeuristic(testboard) : -uWashingtonHeuristic(testboard);
+	  }*/
 	  if (testboard->numValidMoves(this->oppcolor) > 0) {
 	    heur = -negascout(testboard, this->oppcolor, search_depth-1, -infinity, infinity);
-	    //heur2 = -alphabeta(testboard, this->oppcolor, search_depth-1, -infinity, infinity);
 	    //heur = -MTDF(testboard, this->oppcolor, guess, search_depth-1);
 	  }
 	  else {
 	    heur = negascout(testboard, this->color, search_depth-1, -infinity, infinity);
-	    //heur2 = alphabeta(testboard, this->color, search_depth-1, -infinity, infinity);
 	    //heur = MTDF(testboard, this->color, guess, search_depth-1);
 	  }
 	  if (heur > bestheur) {
@@ -272,132 +230,6 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 double Player::heuristic(Board* board)
 {
   return board->countBlack() - board->countWhite();
-}
-
-/**
- *@brief The heuristic combination that researchers at the University of
- *of Washington determined to be best
- *@param Board* board -- a pointer to the board representation we wish to evaluate
- **/
-double Player::uWashingtonHeuristic(Board* board)  {
-	int whitetiles = 0, blacktiles = 0, whitefrontier = 0, blackfrontier = 0;
-
-	int X[] = {-1, -1, 0, 1, 1, 1, 0, -1};
-	int Y[] = {0, 1, 1, 1, 0, -1, -1, -1};
-	
-	// Mobility
-	double mobscore;
-	whitetiles = board->numValidMoves(WHITE);
-	blacktiles = board->numValidMoves(BLACK);
-	if(whitetiles > blacktiles)
-	  mobscore = (100.0 * whitetiles)/(whitetiles + blacktiles);
-	else if(whitetiles < blacktiles)
-	  mobscore = -(100.0 * blacktiles)/(whitetiles + blacktiles);
-	else mobscore = 0;
-
-	// Piece difference, frontier disks and disk square
-	double diskstabilityscore;
-	for(int i = 0; i < BOARDSIZE; i++)
-	  for(int j = 0; j < BOARDSIZE; j++)  
-	    {
-	      if(board->get(WHITE, i, j))  
-		{
-		  diskstabilityscore += (*this->weights)[i][j];
-		  whitetiles++;
-		} 
-	      else if(board->get(BLACK, i, j))  
-		{
-		  diskstabilityscore -= (*this->weights)[i][j];
-		  blacktiles++;
-		}
-	      if(board->occupied(i, j))  
-		{
-		  for(int k = 0; k < 8; k++)  {
-		    int x = i + X[k]; int y = j + Y[k];
-		    if(x >= 0 && x < 8 && y >= 0 && y < 8 && !board->occupied(i, j)) 
-		      {
-			if(board->get(WHITE, i, j)) whitefrontier++;
-			else blackfrontier++;
-			break;
-		      }
-		  }
-		}
-	    }
-	double parityscore;
-	if(whitetiles > blacktiles)
-	  parityscore = (100.0 * whitetiles)/(whitetiles + blacktiles);
-	else if(whitetiles < blacktiles)
-	  parityscore = -(100.0 * blacktiles)/(whitetiles + blacktiles);
-	else parityscore = 0;
-	
-	double frontierscore;
-	if(whitefrontier > blackfrontier)
-	  frontierscore = -(100.0 * whitefrontier)/(whitefrontier + blackfrontier);
-	else if(whitefrontier < blackfrontier)
-	  frontierscore = (100.0 * blackfrontier)/(whitefrontier + blackfrontier);
-	else frontierscore = 0;
-	
-
-	// "Corner Closeness"
-	// If corner isn't occupied, and the tile next to it is occupied
-	double closenessscore;
-	whitetiles = 0; blacktiles = 0;
-	if(!board->occupied(0,0))  
-	  {
-	    if(board->get(WHITE, 0, 1)) whitetiles++;
-	    else if(board->get(BLACK, 0, 1)) blacktiles++;
-	    if(board->get(WHITE, 1, 1)) whitetiles++;
-	    else if(board->get(BLACK, 1, 1)) blacktiles++;
-	    if(board->get(WHITE, 1, 0)) whitetiles++;
-	    else if(board->get(BLACK, 1, 0)) blacktiles++;
-	  }
-	if(!board->occupied(0, 7))
-	  {
-	    if(board->get(WHITE, 0, 6)) whitetiles++;
-	    else if(board->get(BLACK, 0, 6)) blacktiles++;
-	    if(board->get(WHITE, 1, 6)) whitetiles++;
-	    else if(board->get(BLACK, 1, 6)) blacktiles++;
-	    if(board->get(WHITE, 1, 7)) whitetiles++;
-	    else if(board->get(BLACK, 1, 7)) blacktiles++;
-	  }
-	if(!board->occupied(7,0))
-	  {
-	    if(board->get(WHITE, 7, 1)) whitetiles++;
-	    else if(board->get(BLACK, 7, 1)) blacktiles++;
-	    if(board->get(WHITE, 6, 1)) whitetiles++;
-	    else if(board->get(BLACK, 6, 1)) blacktiles++;
-	    if(board->get(WHITE, 6, 0)) whitetiles++;
-	    else if(board->get(BLACK, 6, 0)) blacktiles++;
-	  }
-	if(!board->occupied(7,7)) 
-	  {
-	    if(board->get(WHITE, 6, 7)) whitetiles++;
-	    else if(board->get(BLACK, 6, 7)) blacktiles++;
-	    if(board->get(WHITE, 6, 6)) whitetiles++;
-	    else if(board->get(BLACK, 6, 6)) blacktiles++;
-	    if(board->get(WHITE, 7, 6)) whitetiles++;
-	    else if(board->get(BLACK, 7, 6)) blacktiles++;
-	  }
-	closenessscore = -12.5 * (whitetiles - blacktiles);
-
-	// Holding Corners?
-	double cornerscore;
-	whitetiles = 0; blacktiles = 0;
-	if(board->get(WHITE, 0, 0)) whitetiles++;
-	else if(board->get(BLACK, 0, 0)) blacktiles++;
-	if(board->get(WHITE, 0, 7)) whitetiles++;
-	else if(board->get(BLACK, 0, 7)) blacktiles++;
-	if(board->get(WHITE, 7, 0)) whitetiles++;
-	else if(board->get(BLACK, 7, 0)) blacktiles++;
-	if(board->get(WHITE, 7, 7)) whitetiles++;
-	else if(board->get(BLACK, 7, 7)) blacktiles++;
-	cornerscore = 25 * (whitetiles - blacktiles);
-	
-	// final weighted score
-	double score = (10 * parityscore) + (801.724 * cornerscore) + 
-	  (382.026 * closenessscore) + (78.922 * mobscore) + 
-	  (74.396 * frontierscore) + (10 * diskstabilityscore);
-	return -1*score;
 }
 
 /**

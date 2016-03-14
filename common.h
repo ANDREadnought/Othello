@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <vector>
+
 class FileNotOpenError : public std::exception {};
 
 enum Side { 
@@ -31,5 +32,4 @@ public:
 };
 
 void cleanMoves(std::vector<Move*>* moves);
-
 #endif

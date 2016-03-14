@@ -13,3 +13,4 @@ Move* Move::copy() {
   Move* r = new Move(this->x, this->y);
   return r;
 }
+
