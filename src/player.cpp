@@ -106,7 +106,7 @@ Player::Player(Side side) {
 Player::~Player() {
   delete board;
 
-  system("../extract.sh");
+  system("./extract.sh");
   if(this->trans)
     {
       try
@@ -186,6 +186,7 @@ void Player::saveTables()
    	}
     }
    system("./compress.sh");
+   this->_saved = true;
 }
 
 /*
@@ -229,7 +230,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   std::cerr << "--------------------------" << std::endl << std::endl;
   Entry* entry = this->trans->contains(this->board);
   if(entry) this->trans->update(board, entry->move, entry->score, entry->depth, entry->pop + 1);
-  if(this->_solved && !this->_saved && (this->timer.getRemaining() > 20000 || !this->timing)) this->saveTables();
+  if(this->_solved && !this->_saved && this->timer.getTurnsRemaining() < 10 && (this->timer.getRemaining() > 20000 || !this->timing)) this->saveTables();
   
   return todo;
 }
