@@ -71,3 +71,8 @@ void Timer::progressTurn()
 {
   this->turnsRemaining--;
 }
+
+int Timer::getTurnsRemaining()
+{
+  return this->turnsRemaining;
+}

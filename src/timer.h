@@ -17,6 +17,7 @@ class Timer
   int getRemaining();
   bool canContinue();
   void progressTurn();
+  int getTurnsRemaining();
  private:
   int turnsRemaining;
   int timePerMove;
