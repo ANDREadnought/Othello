@@ -98,6 +98,7 @@ Player::Player(Side side) {
 	temp.push_back(4); temp.push_back(-3); temp.push_back(2); temp.push_back(2);
 	temp.push_back(2); temp.push_back(2); temp.push_back(-3); temp.push_back(4);
 	(*this->weights).push_back(temp);
+
 }
 
 /*
@@ -227,11 +228,14 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
   std::cerr << "Transposition Table Buckets: " << this->trans->bucket_count() << std::endl;
   std::cerr << "Closing Table Entries: " << this->closings->size() << std::endl;
   std::cerr << "Closing Table Buckets: " << this->closings->bucket_count() << std::endl;
-  std::cerr << "--------------------------" << std::endl << std::endl;
   Entry* entry = this->trans->contains(this->board);
   if(entry) this->trans->update(board, entry->move, entry->score, entry->depth, entry->pop + 1);
-  if(this->_solved && !this->_saved && this->timer.getTurnsRemaining() < 10 && (this->timer.getRemaining() > 20000 || !this->timing)) this->saveTables();
-  
+  if(this->_solved && !this->_saved && this->timer.getTurnsRemaining() < 10 && (this->timer.getRemaining() > 20000 || !this->timing))
+    {
+      this->saveTables();
+      std::cerr << "Tables Saved" << std::endl;
+    }
+  std::cerr << "--------------------------" << std::endl << std::endl;
   return todo;
 }
 
