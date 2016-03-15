@@ -1,0 +1,74 @@
+
+/**
+ *@brief Minixmax algorithm for searching moves
+ *@param Board* board -- the board to minimax on
+ *@param Side s -- the current side of the player
+ *@param int depth -- how deep to search
+ **/
+double Player::minimax(Board* board, Side s, int depth)
+{
+  nodes++;
+  //board->printBoard();
+  Side opp;
+  if (s == BLACK){
+    opp = WHITE;
+  }
+  else{
+    opp = BLACK;
+  }
+  double val;
+  if (s == BLACK){
+    val = -infinity;
+  }
+  else{
+    val = infinity;
+  }
+  std::vector<Move*> *moves = board->getMoves(board, s);
+  for (unsigned int i = 0; i < moves->size(); i++) 
+    {
+      //break if out of time.
+      if(!this->timer.canContinue()) break;
+
+      Move *m = (*moves)[i];
+      Board* temp = board->copy();
+      double score = 0;
+      temp->doMove(m, s);
+      if (temp->isDone()) {
+	if (temp->countWhite() > temp->countBlack()) {
+	  score = -infinity;
+	}
+	else if (temp->countWhite() < temp->countBlack()) {
+	  score = infinity;
+	}
+	else {
+	  score = 0;
+	}
+	
+      }
+      else if (depth == 0) {
+	score = uWashingtonHeuristic(temp);
+      }
+      else 
+	{
+	  if (temp->numValidMoves(opp) == 0) 
+	    {
+	      score = minimax(temp, s, depth-1);
+	    }
+	  else
+	    {
+	      score = minimax(temp, opp, depth-1);
+	    }
+	}
+      
+      if (s == BLACK && score > val){
+	val = score;
+      }
+      else if (s == WHITE && score < val){
+	val = score;
+      }
+      //std::cerr << "depth: " << depth << " score: " << score << " " << min <<" Color: " << s <<" (" <<(*moves)[i]->getX() << "," << (*moves)[i]->getY() << ")" << std::endl;
+      delete temp;
+    }
+  cleanMoves(moves);
+  return val;
+}
