@@ -10,6 +10,7 @@
 #include "timer.h"
 #include <unordered_map>
 
+const int OPENING_AUTHORITY = 5;
 const double infinity = 987654321.32658;
 const std::string openingfile = "tables/openingbook.txt";
 const std::string transfile = "tables/transtable.txt";

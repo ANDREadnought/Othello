@@ -12,6 +12,7 @@ Player::Player(Side side) {
     this->timing = true;
     this->_solved = false;
     this->_saved = false;
+    this->timer.setTurnNumber((side == BLACK)?0:1);
 
     system("./extract.sh");
     // Transposition Table
@@ -247,9 +248,21 @@ int nodes = 0;
  **/
 Move* Player::chooseMove(std::vector<Move*>* moves)
 {
+
   int MAX_DEPTH = 20;
   if(!this->timing) MAX_DEPTH = 3;
   if(moves->size() < 1) return nullptr;
+
+  // Opening Book Authority
+  Entry* opening = this->openings->contains(board);
+  if(opening && this->timer.getTurnNumber() <= OPENING_AUTHORITY) return opening->getMove();
+  else if(opening)
+    {
+      Move* move = opening->getMove();
+      moves->insert(moves->begin(), move);
+    }
+
+
   //preset heuristic for keeping track of max
   double bestheur;
   if(this->color == BLACK)
@@ -258,15 +271,17 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
     }
   else bestheur = infinity;
 
+ 
+  
   Entry* entry = nullptr;
   Move* winner = (*moves)[0];
   int search_depth = 1; 
   while(search_depth <= MAX_DEPTH)
     { 
-      
       entry = this->trans->contains(board);
       if(entry) 
 	{
+	  if(search_depth > 1) moves->erase(moves->begin());
 	  Move* move = entry->getMove();
 	  moves->insert(moves->begin(), move);
 	}
@@ -494,6 +509,12 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
   
   Move* winner = nullptr;
   std::vector<Move*> *moves = board->getMoves(board, s);
+  Entry* opening = this->openings->contains(board);
+  if(opening)
+    {
+      Move* move = opening->getMove();
+      moves->insert(moves->begin(), move);
+    }
   Entry* entry = this->trans->contains(board);
   if(entry)
     {
