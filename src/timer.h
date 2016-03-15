@@ -18,10 +18,13 @@ class Timer
   bool canContinue();
   void progressTurn();
   int getTurnsRemaining();
+  int getTurnNumber();
+  void setTurnNumber(int num);
  private:
   int turnsRemaining;
   int timePerMove;
   bool started;
+  int turnNumber;
   std::chrono::system_clock::duration remaining;
   std::chrono::system_clock::time_point start;
   std::chrono::system_clock::time_point end;

@@ -70,9 +70,19 @@ bool Timer::canContinue()
 void Timer::progressTurn()
 {
   this->turnsRemaining--;
+  this->turnNumber += 2;
 }
 
 int Timer::getTurnsRemaining()
 {
   return this->turnsRemaining;
+}
+int Timer::getTurnNumber()
+{
+  return this->turnNumber;
+}
+
+void Timer::setTurnNumber(int num)
+{
+  this->turnNumber = num;
 }
