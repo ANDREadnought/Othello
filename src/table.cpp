@@ -233,6 +233,15 @@ void Table::add(Board* board, Move* best, double score, int depth)
       this->_size++;
       this->_memory += sizeof(Entry);
     }
+  else{
+    for (auto i = this->table->begin(); i != this->table->end(); i++) {
+      delete i->second;
+    }
+    this->table->clear();
+    this->_memory = 0;
+    this->_size = 0;
+    std::cerr << "Cleared" << std::endl;
+  }
 }
 
 
