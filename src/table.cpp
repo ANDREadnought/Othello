@@ -227,8 +227,7 @@ void Table::add(Board* board, Move* best, double score, int depth)
 {
   if(this->_memory < this->_max_memory)
     {
-      Move* move = new Move(best->getX(), best->getY());
-      Entry* entry = new Entry(board->toString(), move, score, depth, 0);
+      Entry* entry = new Entry(board->toString(), best, score, depth, 0);
       std::pair<std::string, Entry*> inserting = {entry->board, entry};
       this->table->insert(inserting);
       this->_size++;
@@ -250,7 +249,8 @@ void Table::update(Board* board, Move* best, double score, int depth, int pop)
   Entry* entry = this->contains(board);
   if(!entry) return;
   entry->board = board->toString();
-  entry->move = new Move(best->getX(), best->getY());
+  entry->move->setX(best->getX());
+  entry->move->setY(best->getY());
   entry->score = score;
   entry->depth = depth;
   entry->pop = pop;
