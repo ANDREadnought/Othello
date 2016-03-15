@@ -9,6 +9,8 @@
 #include "table.h"
 #include "timer.h"
 #include <unordered_map>
+#include <thread>
+#include <future>
 
 const int OPENING_AUTHORITY = 5;
 const double infinity = 987654321.32658;
