@@ -15,3 +15,33 @@ ANDREadnought Liu:
 ---- Bitboard. Bitwise operations are faster than what we have, and fast is ideal.
 
 Over the course of the project, both members(Luke Juusola and Nishad Maskara) contributed approximately equally. Nishad was primarily responsible for search algorithms and squashing bugs, while Luke was primarily responsible for the auxillary pieces that aided in optimization (scripting, transposition table, timing, heuristic...). 
+
+
+
+
+Instructions:
+To build:
+---- make
+To train against self:
+---- make testminimax
+---- ./testminimax
+To play:
+---- ./testgame <Black> <White> <Time>
+
+To extract table files:
+---- ./extract.sh
+To compress table files:
+---- ./compress.sh
+To clear tables:
+---- ./extract.sh
+---- ./clear.sh
+---- ./compress.sh
+To transfer from algebraic notation to ANDREadnought
+---- ./extract.sh
+---- python3 notation_format.py 
+---- <read-file> (tournamentgames.txt)
+---- <write-file> (tables/openingbook.txt)
+---- python3 dedup.py
+---- <write-file> (tables/openingbook.txt)
+---- ./compress.sh
+

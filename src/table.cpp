@@ -176,16 +176,19 @@ void Table::save()
       for(auto i = this->table->begin(); i != this->table->end(); ++i)
 	{
 	  entry = i->second;
-	  const char* score = (std::to_string(entry->score)).c_str();
-	  const char* board = entry->board.c_str();
-	  const char* move = (std::to_string(entry->move->getX() * 10 + entry->move->getY())).c_str();
-	  const char* depth = (std::to_string(entry->depth)).c_str();
-	  const char* pop = (std::to_string(entry->pop)).c_str();
-	  out << board << ' ';
-	  out << score << ' ';
-	  out << move << ' ';
-	  out << depth << ' ';
-	  out << pop;
+	  if(!entry) continue;
+	  //std::cerr << "entry: " << std::endl;
+	  // const char* score = (std::to_string(entry->score)).c_str();
+	  // const char* board = entry->board.c_str();
+	  // const char* move = (std::to_string(entry->move->getX() * 10 + entry->move->getY())).c_str();
+	  //std::cerr << move << std::endl;
+	  // const char* depth = std::to_string(entry->depth);
+	  // const char* pop = (std::to_string(entry->pop)).c_str();
+	  out << entry->board << ' ';
+	  out << entry->score << ' ';
+	  out << std::to_string(entry->move->getX() * 10 + entry->move->getY()) << ' ';
+	  out << entry->depth << ' ';
+	  out << entry->pop;
 	  out << '\n';
 	}
       out.close();
