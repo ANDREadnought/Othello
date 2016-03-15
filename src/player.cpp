@@ -280,11 +280,11 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
     { 
       entry = this->trans->contains(board);
       if(entry) 
-	{
-	  if(search_depth > 1) moves->erase(moves->begin());
-	  Move* move = entry->getMove();
-	  moves->insert(moves->begin(), move);
-	}
+      {
+      if(search_depth > 1) moves->erase(moves->begin());
+        Move* move = entry->getMove();
+        moves->insert(moves->begin(), move);
+      }
       //only let new winner be the best move if we finish
       //searching the entire ply 
       Move* newWinner = winner;
@@ -293,6 +293,10 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 	  double heur;
 	  Board* testboard = this->board->copy();
 	  testboard->doMove((*moves)[i], this->color);
+	  //double guess = uWashingtonHeuristic(testboard);
+	  //Entry* newEntry = this->trans->contains(testboard);
+	  //if(newEntry) guess = newEntry->score;
+	  //std::cerr << guess << std::endl;
 	  if (testboard->isDone()) {
 	    if (testboard->countWhite() > testboard->countBlack()) {
 	      heur = -infinity;
@@ -306,18 +310,18 @@ Move* Player::chooseMove(std::vector<Move*>* moves)
 	  }
 	  else if (this->color == WHITE) {
 	    if (testboard->numValidMoves(BLACK) > 0) {
-	      heur = alphabeta(testboard, BLACK, search_depth, -infinity, infinity);
+	      heur = alphabeta(testboard, BLACK, search_depth-1, -infinity, infinity);
 	    }
 	    else {
-	      heur = alphabeta(testboard, WHITE, search_depth, -infinity, infinity);
+	      heur = alphabeta(testboard, WHITE, search_depth-1, -infinity, infinity);
 	    }
 	  }
 	  else {
 	    if (testboard->numValidMoves(WHITE) > 0) {
-	      heur = alphabeta(testboard, WHITE, search_depth, -infinity, infinity);
+	      heur = alphabeta(testboard, WHITE, search_depth-1, -infinity, infinity);
 	    }
 	    else{ 
-	      heur = alphabeta(testboard, BLACK, search_depth, -infinity, infinity);
+	      heur = alphabeta(testboard, BLACK, search_depth-1, -infinity, infinity);
 	    }
 	  }
  	  if(this->color == BLACK and heur > bestheur)
@@ -491,6 +495,9 @@ double Player::uWashingtonHeuristic(Board* board)  {
 double Player::alphabeta(Board* board, Side s, int depth, double alpha, double beta)
 {
   nodes++;
+  if (board->isDone()) return heuristic(board) * 1000000;
+  if(depth == 0) return uWashingtonHeuristic(board);
+
   //board->printBoard();
   Side opp;
   if (s == BLACK){
@@ -530,32 +537,16 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
       Board * temp = board->copy();
       double score = 0;
       temp->doMove(m, s);
-      if (temp->isDone()) {
-	if (temp->countWhite() > temp->countBlack()) {
-	  score = -infinity;
-	}
-	else if (temp->countWhite() < temp->countBlack()) {
-	  score = infinity;
-	}
-	else {
-	  score = 0;
-	}
-      }
-      else if (depth == 0)
+      
+      if (temp->numValidMoves(opp) == 0)
 	{
-	  score = uWashingtonHeuristic(temp);
+	  score = alphabeta(temp, s, depth-1, alpha, beta);
 	}
       else
 	{
-	  if (temp->numValidMoves(opp) == 0)
-	    {
-	      score = alphabeta(temp, s, depth-1, alpha, beta);
-	    }
-	  else
-	    {
-	      score = alphabeta(temp, opp, depth-1, alpha, beta);
-	    }
+	  score = alphabeta(temp, opp, depth-1, alpha, beta);
 	}
+      
       if (s == BLACK && score > val)
 	{
 	  val = score;
@@ -588,4 +579,18 @@ double Player::alphabeta(Board* board, Side s, int depth, double alpha, double b
   return val;
 }
     
-    
+double Player::mtdf(Board* board, Side color, int depth, double guess)
+{
+  double g = guess;
+  double upper = infinity;
+  double lower = -infinity;
+  while(lower < upper)
+    {
+      double beta = (g > lower+1)?g:lower+1;
+      //std::cerr << lower << ", " << upper << ", " << g << std::endl;
+      g = alphabeta(board, color, depth, beta-1, beta);
+      if(g < beta) upper = g;
+      else lower = g;
+    }
+  return g;
+}

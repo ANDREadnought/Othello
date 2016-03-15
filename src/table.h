@@ -9,7 +9,7 @@
 #include "common.h"
 #include "board.h"
 
-const int buckets = 1000000;
+const int buckets = 3000000;
 
 class Entry
 {
